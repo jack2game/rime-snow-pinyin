@@ -13,15 +13,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt install -y --no-install-recommends librime-bin rime-prelude rime-data-stroke
+        run: sudo apt install -y --no-install-recommends librime-bin rime-prelude
+      - name: Make an archive for distribution
+        run: |
+          zip -r snow.zip snow_* lua
       - name: Patch
         run: |
           echo -e "patch:\n  schema_list:\n    - { schema: snow_sipin }" > default.custom.yaml
+          echo -e "patch:\n  schema/dependencies: [snow_pinyin]\n  engine/translators/@2: null\n  translator/packs: [snow_pinyin.base, snow_pinyin.ext]" > snow_sipin.custom.yaml
+          echo -e "patch:\n  schema/dependencies: []\n  translator/packs: [snow_pinyin.base, snow_pinyin.ext]" > snow_pinyin.custom.yaml
       - name: Build
         run: rime_deployer --build . /usr/share/rime-data/
-      - name: Make an archive
+      - name: Make an archive for preview
         run: |
-          zip -r snow.zip snow_* lua
           zip -r snow-build.zip build lua *.txt
       - name: Create Release
         id: create_release
