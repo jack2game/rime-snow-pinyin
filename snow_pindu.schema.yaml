@@ -1,0 +1,311 @@
+# Rime schema
+# encoding: utf-8
+
+schema:
+  schema_id: snow_pindu
+  name: 冰雪拼读
+  version: '0.1'
+  author:
+    - 张皓哲
+    - 谭淞宸
+  description: |
+    拼读并击整句版
+  dependencies:
+    - snow_pinyin
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中文, 西文 ]
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: simplification
+    states: [ 漢字, 汉字 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - chord_composer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - script_translator
+  filters:
+    - uniquifier
+    - lua_filter@*snow.fix
+
+chord_composer:
+  alphabet: 'qazwsxedcrfvtgbyhnujmik,ol.p;/ '
+  algebra:
+    # 仅左手并击，打出声介
+    - xform/^([qazwsxedcrfvtgb]+)$/ $1 A/
+    - xform/^([qazwsxedcrfvtgb]+) $/ $1 B/
+    # 仅右手并击，打出符号和功能键
+    - xform/^h$/H/
+    - xform/^j$/J/
+    - xform/^k$/K/
+    - xform/^l$/L/
+    - xform/^y$/Y/
+    - xform/^u$/U/
+    - xform/^i$/I/
+    - xform/^o$/O/
+    - xform/^p$/P/
+    - xform/^n$/N/
+    - xform/^m$/M/
+    - xform/^jk$/B/
+    - xform/^kl$/C/
+    - xform/^jl$/D/
+    - xform/^j;$/E/
+    - xform/^ui$/Q/
+    - xform/^io$/W/
+    - xform/^uo$/R/
+    - xform/^up$/T/
+    - xform/^m,$/S/
+    - xform/^,\.$/D/
+    - xform/^m\.$/F/
+    - xform|^m\/$|G|
+    - xform/^hk$/[/
+    - xform/^hl$/]/
+    # 左右手并击，打出音节
+    - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+)$| $1  $2 |
+    # 左手声介
+    - xform/ zv /ng/
+    - xform/ d /ngi/
+    - xform/ e /ngu/
+    - xform/ sd /ngv/
+    - xform/ w /b/
+    - xform/ sg /bi/
+    - xform/ eg /p/
+    - xform/ xg /pi/
+    - xform/ c /m/
+    - xform/ qf /mi/
+    - xform/ t /f/
+    - xform/ f /d/
+    - xform/ xc /di/
+    - xform/ cv /du/
+    - xform/ af /t/
+    - xform/ wf /ti/
+    - xform/ zf /tu/
+    - xform/ dg /n/
+    - xform/ cf /ni/
+    - xform/ se /nu/
+    - xform/ xd /nv/
+    - xform/ b /l/
+    - xform/ x /li/
+    - xform/ wg /lu/
+    - xform/ as /lv/
+    - xform/ sf /g/
+    - xform/ v /gu/
+    - xform/ xv /k/
+    - xform/ cg /ku/
+    - xform/ z /h/
+    - xform/ er /hu/
+    - xform/ a /ji/
+    - xform/ sr /jv/
+    - xform/ df /qi/
+    - xform/ sv /qv/
+    - xform/ r /xi/
+    - xform/ dr /xv/
+    - xform/ g /zh/
+    - xform/ we /zhu/
+    - xform/ qr /ch/
+    - xform/ dv /chu/
+    - xform/ s /sh/
+    - xform/ ag /shu/
+    - xform/ q /z/
+    - xform/ ef /zu/
+    - xform/ xf /c/
+    - xform/ zg /cu/
+    - xform/ av /s/
+    - xform/ ar /su/
+    # 右手韵调
+    - xform/ ; /1/
+    - xform/ u /2/
+    - xform/ l /3/
+    - xform/ j /4/
+    - xform/ n /a1/
+    - xform/ ul /a2/
+    - xform/ mk /a3/
+    - xform/ io /a4/
+    - xform/ ho /ai1/
+    - xform/ hl /ai2/
+    - xform/ hi /ai3/
+    - xform/ j; /ai4/
+    - xform/ ui /an1/
+    - xform| / |an2|
+    - xform/ m, /an3/
+    - xform/ o /an4/
+    - xform/ ,\. /ang1/
+    - xform/ ji /ang2/
+    - xform/ jo /ang3/
+    - xform/ uo /ang4/
+    - xform/ j. /ao1/
+    - xform/ u; /ao2/
+    - xform| m/ |ao3|
+    - xform/ kl /ao4/
+    - xform/ k /e1/
+    - xform/ p /e2/
+    - xform/ m /e3/
+    - xform/ h /e4/
+    - xform/ uk /ei1/
+    - xform/ m; /ei2/
+    - xform/ j, /ei3/
+    - xform/ \. /ei4/
+    - xform/ , /en1/
+    - xform/ jl /en2/
+    - xform/ jp /en3/
+    - xform/ hk /en4/
+    - xform/ i /eng1/
+    - xform/ y /eng2/
+    - xform/ h; /eng3/
+    - xform/ jk /eng4/
+    - xform| j/ |ou1|
+    - xform/ ml /ou2/
+    - xform/ up /ou3/
+    - xform/ m\. /ou4/
+    - xlit/1234/flxh/
+    # # 补足隐含的韵母
+    # - xform/^(?<=[bpmf])(?=\d)/u/
+    # - xform/^(?<=[zcsrh])(?=\d)/i/
+    # # 全拼的正字法
+    # - xform/^i(n\d|ng\d|\d)/yi$1/
+    # - xform/^i/y/
+    # - xform/(?<=.)ueng(?=\d)/ong/
+    # - xform/(?<=.)üeng(?=\d)/iong/
+    # - xform/^(?<=[bpmf])e(?=\d)/o/
+    # - xform/ue(?=\d)/uo/
+    # - xform/^'(?=\d)/'er/
+    # - xform/^u(?=\d)/wu/
+    # - xform/^u/w/
+    # - xform/^ü/yu/
+    # - xform/^([jqx])ü/$1u/
+    # - xform/^([nl])ü/$1v/
+  prompt_format:
+    # 加方括弧
+    - 'xform/^(.*)$/[$1]/'
+
+editor:
+  bindings:
+    # 退格鍵刪除一個拼音音節
+    BackSpace: back_syllable
+
+speller:
+  alphabet: "bpmfdtnlgkhjqxzcsrywaeiouv"
+  initials: "bpmfdtnlgkhjqxzcsryw"
+  algebra:
+    - xform/5/1/
+    # 用 ng 表示零声母
+    - xform/^(?=[aoeyw])/ng/
+    - xform/^ngyu/ngv/
+    - xform/^ngyi?/ngi/
+    - xform/^ngwu?/ngu/
+    # 转换成标准的声介-韵调形式
+    - xform/iu/iou/
+    - xform/ui/uei/
+    - xform/un/uen/
+    - xform/iong/veng/
+    - xform/ong/ueng/
+    - xform/^([jqx])u/$1v/
+    # 删除隐含的韵母
+    - xform/^([bpmf])u/$1/
+    - xform/er//
+    - xform/(?<=[zcsrh])i//
+    # 支持声介简拼
+    - abbrev/^([bpmfdtnlgkhjqxzcsr]|zh|ch|sh|ng)([aoe].+\d|\d)$/$1/
+    - abbrev/^([bpmdtnljqx]|ng)i.+$/$1i/
+    - abbrev/^([dtnlgkhzcsr]|zh|ch|sh|ng)u.+$/$1u/
+    - abbrev/^([nljqx]|ng)v.+$/$1v/
+    # 用字母标调
+    - xlit/1234/flxh/
+
+translator:
+  dictionary: snow_pinyin
+  prism: snow_pindu
+  enable_user_dict: false
+
+menu:
+  page_size: 5
+  alternative_select_keys: "ABCDE"
+  alternative_select_labels: [1, 2, 3, 4, 5]
+
+punctuator:
+  half_shape:
+    '1' : '1'
+    '2' : '2'
+    '3' : '3'
+    '4' : '4'
+    '5' : '5'
+    '6' : '6'
+    '7' : '7'
+    '8' : '8'
+    '9' : '9'
+    '0' : '0'
+    '!' : '!'
+    '@' : '@'
+    '#' : '#'
+    '$' : '$'
+    '%' : '%'
+    '^' : '^'
+    '&' : '&'
+    '*' : '*'
+    '(' : '('
+    ')' : ')'
+    '`' : '`'
+    '~' : '~'
+    '-' : '-'
+    '_' : '_'
+    '+' : '+'
+    '=' : '='
+    '[' : '['
+    '{' : '{'
+    ']' : ']'
+    '}' : '}'
+    '\' : '\'
+    '|' : '|'
+    ';' : ';'
+    ':' : ':'
+    "'" : "'"
+    '"' : '"'
+    ',' : ','
+    '<' : '<'
+    '.' : '.'
+    '>' : '>'
+    '/' : '/'
+    '?' : '?'
+    'H' : 、
+    'J' : ，
+    'K' : 。
+    'L' : ？
+    'Y' : ——
+    'U' : “
+    'I' : ”
+    'O' : ：
+    'P' : ；
+    'N' : ……
+    'M' : ！
+    'Q' : （
+    'W' : ）
+    'R' : 《
+    'T' : 》
+    'S' : ·
+    'D' : ～
+    'F' : ‘
+    'G' : ’
+
+key_binder:
+  bindings:
+    - { when: composing, accept: bracketright, send: Page_Down }
+    - { when: composing, accept: bracketleft, send: Page_Up }
