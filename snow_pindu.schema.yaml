@@ -51,34 +51,35 @@ chord_composer:
   alphabet: 'qazwsxedcrfvtgbyhnujmik,ol.p;/ '
   algebra:
     # 仅左手并击，打出声介
-    - xform/^([qazwsxedcrfvtgb]+)$/ $1 A/
-    - xform/^([qazwsxedcrfvtgb]+) $/ $1 B/
+    - xform/^([qazwsxedcrfvtgb]+)$/ $1  /
+    - xform/^([qazwsxedcrfvtgb]+) $/ $1 - /
     # 仅右手并击，打出符号和功能键
-    - xform/^h$/H/
-    - xform/^j$/J/
-    - xform/^k$/K/
-    - xform/^l$/L/
-    - xform/^y$/Y/
-    - xform/^u$/U/
-    - xform/^i$/I/
-    - xform/^o$/O/
-    - xform/^p$/P/
-    - xform/^n$/N/
-    - xform/^m$/M/
-    - xform/^jk$/B/
-    - xform/^kl$/C/
-    - xform/^jl$/D/
-    - xform/^j;$/E/
-    - xform/^ui$/Q/
-    - xform/^io$/W/
-    - xform/^uo$/R/
-    - xform/^up$/T/
-    - xform/^m,$/S/
-    - xform/^,\.$/D/
-    - xform/^m\.$/F/
-    - xform|^m\/$|G|
-    - xform/^hk$/[/
-    - xform/^hl$/]/
+    - xform|^h$|/duh |
+    - xform|^j$|/dh |
+    - xform|^k$|/jh |
+    - xform|^l$|/wh |
+    - xform|^y$|/pzh |
+    - xform|^u$|/zsyh |
+    - xform|^i$|/ysyh |
+    - xform|^o$|/mh |
+    - xform|^p$|/fh |
+    - xform|^n$|/slh |
+    - xform|^m$|/th |
+    - xform|^ui$|/zkh |
+    - xform|^io$|/ykh |
+    - xform|^uo$|/zsmh |
+    - xform|^up$|/ysmh |
+    - xform|^m,$|/fgh |
+    - xform|^,\.$|/blh |
+    - xform|^m\.$|/zdyh |
+    - xform|^m\/$|/ydyh |
+    - xform/^jk$/- /
+    - xform/^kl$/-- /
+    - xform/^jl$/--- /
+    - xform/^j;$/---- /
+    - xform/-/{Right}/
+    - xform/^hk$/{Page_Up}/
+    - xform/^hl$/{Page_Down}/
     # 左右手并击，打出音节
     - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+)$| $1  $2 |
     # 左手声介
@@ -177,22 +178,6 @@ chord_composer:
     - xform/ up /ou3/
     - xform/ m\. /ou4/
     - xlit/1234/flxh/
-    # # 补足隐含的韵母
-    # - xform/^(?<=[bpmf])(?=\d)/u/
-    # - xform/^(?<=[zcsrh])(?=\d)/i/
-    # # 全拼的正字法
-    # - xform/^i(n\d|ng\d|\d)/yi$1/
-    # - xform/^i/y/
-    # - xform/(?<=.)ueng(?=\d)/ong/
-    # - xform/(?<=.)üeng(?=\d)/iong/
-    # - xform/^(?<=[bpmf])e(?=\d)/o/
-    # - xform/ue(?=\d)/uo/
-    # - xform/^'(?=\d)/'er/
-    # - xform/^u(?=\d)/wu/
-    # - xform/^u/w/
-    # - xform/^ü/yu/
-    # - xform/^([jqx])ü/$1u/
-    # - xform/^([nl])ü/$1v/
   prompt_format:
     # 加方括弧
     - 'xform/^(.*)$/[$1]/'
@@ -207,6 +192,11 @@ speller:
   initials: "bpmfdtnlgkhjqxzcsryw"
   algebra:
     - xform/5/1/
+    # 合并边缘音节
+    - xform/^(h?)ng(?=\d)/$1eng/
+    - xform/^n(?=\d)/en/
+    - xform/^m(?=\d)/mu/
+    - xform/^hm(?=\d)/hen/
     # 用 ng 表示零声母
     - xform/^(?=[aoeyw])/ng/
     - xform/^ngyu/ngv/
@@ -218,11 +208,13 @@ speller:
     - xform/un/uen/
     - xform/iong/veng/
     - xform/ong/ueng/
-    - xform/^([jqx])u/$1v/
+    - xform/(?<=[jqx])u/v/
     # 删除隐含的韵母
-    - xform/^([bpmf])u/$1/
+    - xform/(?<=[bpmf])u//
     - xform/er//
     - xform/(?<=[zcsrh])i//
+    - xform/(?<=[bpmf])o/e/
+    - xform/uo/ue/
     # 支持声介简拼
     - abbrev/^([bpmfdtnlgkhjqxzcsr]|zh|ch|sh|ng)([aoe].+\d|\d)$/$1/
     - abbrev/^([bpmdtnljqx]|ng)i.+$/$1i/
@@ -234,12 +226,32 @@ speller:
 translator:
   dictionary: snow_pinyin
   prism: snow_pindu
-  enable_user_dict: false
-
-menu:
-  page_size: 5
-  alternative_select_keys: "ABCDE"
-  alternative_select_labels: [1, 2, 3, 4, 5]
+  packs:
+    - snow_pinyin.base
+    - snow_pinyin.ext
+    - snow_pinyin.tencent
+  preedit_format:
+    # 还原声调
+    - xform/(?<! )f( |$)/1$1/
+    - xform/(?<! )l( |$)/2$1/
+    - xform/(?<! )x( |$)/3$1/
+    - xform/(?<! )h( |$)/4$1/
+    # 补足隐含的韵母
+    - xform/(?<=[bpmf])(?=\d)/u/
+    - xform/(?<=[zcsrh])(?=\d)/i/
+    - xform/(?<=ng)(?=\d)/er/
+    # 全拼的正字法
+    - xform/ngi(n\d|ng\d|\d)/yi$1/
+    - xform/ngi/y/
+    - xform/ngu(?=\d)/wu/
+    - xform/ngu/w/
+    - xform/ngv/yu/
+    - xform/(^| )ng/$1'/
+    - xform/ueng/ong/
+    - xform/veng/iong/
+    - xform/(?<=[bpmf])e(?=\d)/o/
+    - xform/ue(?=\d)/uo/
+    - xform/([jqx])v/$1u/
 
 punctuator:
   half_shape:
@@ -283,29 +295,35 @@ punctuator:
     '<' : '<'
     '.' : '.'
     '>' : '>'
-    '/' : '/'
+    '/' : ['/', '／']
     '?' : '?'
-    'H' : 、
-    'J' : ，
-    'K' : 。
-    'L' : ？
-    'Y' : ——
-    'U' : “
-    'I' : ”
-    'O' : ：
-    'P' : ；
-    'N' : ……
-    'M' : ！
-    'Q' : （
-    'W' : ）
-    'R' : 《
-    'T' : 》
-    'S' : ·
-    'D' : ～
-    'F' : ‘
-    'G' : ’
+  symbols:
+    __include: symbols.yaml:/punctuator/symbols
+    '/th': '！'
+    '/slh': '……'
+    '/zkh': '（'
+    '/ykh': '）'
+    '/fgh': '·'
+    '/blh': '～'
+    '/pzh': '——'
+    '/fh': '；'
+    '/mh': '：'
+    '/zdyh': '‘'
+    '/ydyh': '’'
+    '/zsyh': '“'
+    '/ysyh': '”'
+    '/dh': '，'
+    '/zsmh': '《'
+    '/jh': '。'
+    '/ysmh': '》'
+    '/duh': '、'
+    '/wh': '？'
 
 key_binder:
   bindings:
     - { when: composing, accept: bracketright, send: Page_Down }
     - { when: composing, accept: bracketleft, send: Page_Up }
+
+recognizer:
+  patterns:
+    punct: '/([0-9]0?|[A-Za-z]+)?$'
