@@ -11,9 +11,17 @@ local function update(env)
   env.engine.context:refresh_non_confirmed_composition()
 end
 
+---@class ShapeConfig
+---@field match string?
+---@field match_shape string?
+---@field accept string
+
+---@class ShapeEnv: Env
+---@field config ShapeConfig[]
+
 local processor = {}
 
----@param env Env
+---@param env ShapeEnv
 function processor.init(env)
   local function clear()
     env.engine.context:set_property("shape_input", "")
@@ -23,10 +31,31 @@ function processor.init(env)
   local context = env.engine.context
   context.select_notifier:connect(clear)
   context.commit_notifier:connect(clear)
+  local shape_config = env.engine.schema.config:get_list("speller/shape")
+  if not shape_config then
+    return
+  end
+  env.config = {}
+  for i = 1, shape_config.size do
+    local item = shape_config:get_at(i - 1)
+    if not item then goto continue end
+    local value = item:get_map()
+    if not value then goto continue end
+    local match = value:get_value("match")
+    local match_shape = value:get_value("match_shape")
+    ---@type ShapeConfig
+    local parsed = {
+      match = match and match:get_string(),
+      match_shape = match_shape and match_shape:get_string(),
+      accept = value:get_value("accept"):get_string(),
+    }
+    table.insert(env.config, parsed)
+    ::continue::
+  end
 end
 
 ---@param key KeyEvent
----@param env AssistEnv
+---@param env ShapeEnv
 function processor.func(key, env)
   local input = snow.current(env.engine.context)
   if not input or input:len() == 0 then
@@ -37,19 +66,24 @@ function processor.func(key, env)
   local context = env.engine.context
   local shape_input = context:get_property("shape_input")
   local keyName = key:repr()
-  if keyName == "1" and rime_api.regex_match(input, "[bpmfdtnlgkhjqxzcsrywv][aeiou]{0,3}") then
-    shape_input = "1"
-    goto update
-  elseif keyName == "BackSpace" and shape_input ~= "" then
+  if keyName == "BackSpace" and shape_input ~= "" then
     shape_input = shape_input:sub(1, -2)
     goto update
-  elseif shape_input == "1" and rime_api.regex_match(keyName, "[a-z]") then
-    shape_input = shape_input .. keyName
-    goto update
-  elseif (rime_api.regex_match(input, "[bpmfdtnlgkhjqxzcsrywv][aeiou]{3}") or shape_input:len() > 0) and rime_api.regex_match(keyName, "[aeiou]") then
-    shape_input = shape_input .. keyName
-    goto update
   else
+    for _, rule in ipairs(env.config) do
+      if rule.match and not rime_api.regex_match(input, rule.match) then
+        goto continue
+      end
+      if rule.match_shape and not rime_api.regex_match(shape_input, rule.match_shape) then
+        goto continue
+      end
+      if not rime_api.regex_match(keyName, rule.accept) then
+        goto continue
+      end
+      shape_input = shape_input .. keyName
+      goto update
+      ::continue::
+    end
     return snow.kNoop
   end
   ::update::

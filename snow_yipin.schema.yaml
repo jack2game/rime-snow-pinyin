@@ -2,14 +2,14 @@
 # encoding: utf-8
 
 schema:
-  schema_id: snow_pindu
-  name: 冰雪拼读
-  version: '0.1'
+  schema_id: snow_yipin
+  name: 冰雪一拼
+  version: "0.1"
   author:
-    - 张皓哲
-    - 谭淞宸
+    - 张皓哲 <576440085@qq.com>
+    - 谭淞宸 <i@tansongchen.com>
   description: |
-    拼读并击整句版
+    改编自拼读并击，使用脚本翻译器来达到更好的打词体验
   dependencies:
     - snow_pinyin
 
@@ -225,7 +225,7 @@ speller:
 
 translator:
   dictionary: snow_pinyin
-  prism: snow_pindu
+  prism: snow_yipin
   packs:
     - snow_pinyin.base
     - snow_pinyin.ext

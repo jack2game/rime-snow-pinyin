@@ -1,25 +1,20 @@
 local snow = require "snow.snow"
 
-local number_to_letter = {
-  ["1"] = "e",
-  ["2"] = "i",
-  ["3"] = "u",
-  ["4"] = "o",
-  ["5"] = "a",
-}
-
-local letter_to_stroke = {
-  ["e"] = "一",
-  ["i"] = "丨",
-  ["u"] = "丿",
-  ["o"] = "丶",
-  ["a"] = "乙",
+local number_to_stroke = {
+  ["1"] = "一",
+  ["2"] = "丨",
+  ["3"] = "丿",
+  ["4"] = "丶",
+  ["5"] = "乙",
 }
 
 ---@class AssistEnv: Env
 ---@field strokes table<string, string>
 ---@field radicals table<string, string>
 ---@field radical_sipin table<string, string>
+---@field hint string?
+---@field strokes_map table<string, string>
+---@field reverse_strokes_map table<string, string>
 
 local function table_from_tsv(path)
   ---@type table<string, string>
@@ -34,7 +29,7 @@ local function table_from_tsv(path)
     if not content or not character then
       goto continue
     end
-    result[character] = content:gsub("%d", number_to_letter)
+    result[character] = content
     ::continue::
   end
   file:close()
@@ -49,6 +44,18 @@ function filter.init(env)
   env.strokes = table_from_tsv(dir .. "strokes.txt")
   env.radicals = table_from_tsv(dir .. "radicals.txt")
   env.radical_sipin = table_from_tsv(dir .. "radical_sipin.txt")
+  env.hint = env.engine.schema.config:get_string("speller/hint_shape")
+  env.strokes_map = {}
+  env.reverse_strokes_map = {}
+  local raw = env.engine.schema.config:get_map("speller/strokes")
+  if not raw then return end
+  for _, key in ipairs(raw:keys()) do
+    local value = raw:get_value(key)
+    if value then
+      env.strokes_map[value:get_string()] = key
+      env.reverse_strokes_map[key] = value:get_string()
+    end
+  end
 end
 
 ---@param translation Translation
@@ -68,13 +75,13 @@ function filter.func(translation, env)
       end
       prompt = " 部首 [" .. partial_code .. "]"
     else
-      partial_code = shape_input
+      partial_code = shape_input:gsub(".", env.strokes_map)
       code = env.strokes[candidate.text] or ""
-      local maybe_prompt = " 笔画 [" .. partial_code:gsub("[aeiou]", letter_to_stroke) .. "]"
+      local maybe_prompt = " 笔画 [" .. partial_code:gsub("%d", number_to_stroke) .. "]"
       prompt = #shape_input > 0 and maybe_prompt or ""
     end
     if not code or code:sub(1, #partial_code) == partial_code then
-      candidate.comment = code
+      candidate.comment = code:gsub(".", env.reverse_strokes_map)
       candidate.preedit = candidate.preedit .. prompt
       yield(candidate)
     end
@@ -86,7 +93,7 @@ end
 function filter.tags_match(segment, env)
   local current = snow.current(env.engine.context)
   if not current then return false end
-  if rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrwyv][aeiou]{3}") then return true end
+  if env.hint and rime_api.regex_match(current, env.hint) then return true end
   local shape_input = env.engine.context:get_property("shape_input")
   if shape_input:len() > 0 then return true end
   return false

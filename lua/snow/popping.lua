@@ -12,6 +12,17 @@ local strategies = {
   conditional = "conditional"
 }
 
+---@class PoppingConfig
+---@field when string
+---@field match string
+---@field accept string
+---@field prefix number
+---@field strategy string
+
+---@class PoppingEnv: Env
+---@field speller Processor
+---@field popping PoppingConfig[]
+
 ---@param env PoppingEnv
 function this.init(env)
   env.speller = Component.Processor(env.engine, "", "speller")

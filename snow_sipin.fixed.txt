@@ -6,7 +6,7 @@ bai	八 8
 bao	办
 bau	把
 be	被
-bea	B b
+bea	别
 bee	别
 bei	北
 beo	本
@@ -21,7 +21,7 @@ bo	博
 boa	擘
 boe	脖
 boi	波
-boo	啵
+boo	B b
 bou	跛
 bu	补
 bua	部
@@ -111,10 +111,10 @@ fii	一 1
 fio	因
 fiu	已
 fo	又
-foa	F f
+foa	？
 foe	用
 foi	唷
-foo	哟
+foo	F f
 fou	由
 fu	要
 fua	负
@@ -171,12 +171,12 @@ hia	画
 hie	黄
 hii	坏
 hio	换
-hiu	H h
+hiu	？
 ho	后
 hoa	或
 hoe	活
 hoi	豁
-hoo	和
+hoo	H h
 hou	火
 hu	会
 hua	互
@@ -195,7 +195,7 @@ je	接
 jea	借
 jee	节
 jei	皆
-jeo	J j
+jeo	价
 jeu	姐
 ji	即
 jia	既
@@ -207,7 +207,7 @@ jo	久
 joa	倔
 joe	绝
 joi	撅
-joo	卷
+joo	卷 J j
 jou	九 9
 ju	加
 jua	架
@@ -238,11 +238,11 @@ ko	越
 koa	月
 koe	空
 koi	约
-koo	元
+koo	元 K k
 kou	口
 ku	哭
 kua	酷
-kue	K k
+kue	？
 kui	亏
 kuo	困
 kuu	苦
@@ -347,7 +347,7 @@ pai	排
 pao	盘
 pau	泡
 pe	陪
-pea	P p
+pea	？
 pee	碰
 pei	配
 peo	喷
@@ -362,7 +362,7 @@ po	破
 poa	迫
 poe	婆
 poi	颇
-poo	桲
+poo	P p
 pou	剖
 pu	骗
 pua	铺
@@ -381,7 +381,7 @@ qe	且
 qea	切
 qee	茄
 qei	切
-qeo	Q q
+qeo	？
 qeu	且
 qi	其
 qia	气
@@ -393,7 +393,7 @@ qo	却
 qoa	雀
 qoe	穷
 qoi	缺
-qoo	全
+qoo	全 Q q
 qou	求
 qu	前
 qua	恰
@@ -440,10 +440,10 @@ sai	塞
 sao	三 3
 sau	扫
 se	色
-sea	涩
-see	僧
+sea	A a
+see	E e
 sei	I i
-seo	森
+seo	O o
 seu	U u
 si	玩
 sia	四 4
@@ -474,7 +474,7 @@ te	特
 tea	帖
 tee	疼
 tei	贴
-teo	O o
+teo	？
 teu	帖
 ti	听
 tia	替
@@ -515,7 +515,7 @@ vio	涮
 viu	使
 vo	说
 voa	硕
-voe	E e
+voe	？
 voi	说
 voo	V v
 vou	手
@@ -545,7 +545,7 @@ wii	之
 wio	转
 wiu	纸
 wo	中
-woa	A a
+woa	？
 woe	种
 woi	捉
 woo	W w
@@ -567,7 +567,7 @@ xe	写
 xea	谢
 xee	鞋
 xei	些
-xeo	X x
+xeo	？
 xeu	血
 xi	行
 xia	系
@@ -579,7 +579,7 @@ xo	学
 xoa	血
 xoe	胸
 xoi	靴
-xoo	选
+xoo	选 X x
 xou	秀
 xu	下
 xua	吓
