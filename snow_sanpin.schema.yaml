@@ -6,7 +6,7 @@ __include: snow_pinyin.schema.yaml:/
 schema:
   schema_id: snow_sanpin
   name: 冰雪三拼
-  version: "1.0"
+  version: "0.1"
   author:
     - 谭淞宸 <i@tansongchen.com>
   description: |
@@ -55,9 +55,9 @@ engine:
     - reverse_lookup_filter@lookup_sanpin
     - lua_filter@*snow.fix
     - lua_filter@*snow.postpone
-    - simplifier
     - uniquifier
     - lua_filter@*snow.shape_filter
+    - simplifier
 
 sanpin_algebra:
   # 全拼还原
@@ -101,16 +101,25 @@ speller:
   alphabet: bpmfdtnlgkhjqxzcsrwyeviuoa
   initials: bpmfdtnlgkhjqxzcsrwye
   delimiter: " "
+  radicals: "radicals_gf0012.txt"
+  radical_map: "radical_sipin.txt"
   shape:
+    - match: "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]?"
+      accept: "1"
+    - match_shape: "1"
+      accept: "[a-z]"
     - match: "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]"
       accept: "[viuoa]"
+    - match_shape: ".+"
+      accept: "[aeiou]"
   hint_shape: "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]"
+  hint_type: "stroke"
   strokes:
-    1: v
-    2: i
-    3: u
-    4: o
-    5: a
+    一: v
+    丨: i
+    丿: u
+    丶: o
+    乙: a
   popping:
     # 单字三码顶
     - when: popping
@@ -165,6 +174,6 @@ __patch:
 patch:
   switches/+:
     - name: popping
-      states: [整句, 字词]
+      states: [整句, 顶功]
       reset: 1
   menu/alternative_select_keys: "_23890"

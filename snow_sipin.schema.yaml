@@ -52,9 +52,9 @@ engine:
     - reverse_lookup_filter@lookup_sipin
     - lua_filter@*snow.fix
     - lua_filter@*snow.postpone
-    - simplifier
     - uniquifier
     - lua_filter@*snow.shape_filter
+    - simplifier
     - lua_filter@*snow.special
 
 sipin_algebra:
@@ -102,6 +102,8 @@ speller:
   alphabet: bpmfdtnlgkhjqxzcsrwyvaeiou
   initials: bpmfdtnlgkhjqxzcsrwyv
   delimiter: " "
+  radicals: "radicals_gf0012.txt"
+  radical_map: "radical_sipin.txt"
   shape:
     - match: "[bpmfdtnlgkhjqxzcsrywv][aeiou]{0,3}"
       accept: "1"
@@ -112,12 +114,13 @@ speller:
     - match_shape: ".+"
       accept: "[aeiou]"
   hint_shape: "[bpmfdtnlgkhjqxzcsrwyv][aeiou]{3}"
+  hint_type: "stroke"
   strokes:
-    1: e
-    2: i
-    3: u
-    4: o
-    5: a
+    一: e
+    丨: i
+    丿: u
+    丶: o
+    乙: a
   popping:
     # 单字、二字词、三字词
     - when: popping
@@ -175,7 +178,7 @@ __patch:
 patch:
   switches/+:
     - name: popping
-      states: [整句, 字词]
+      states: [整句, 顶功]
       reset: 1
   punctuator/half_shape/+:
     ";": 的

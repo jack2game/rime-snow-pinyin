@@ -4,13 +4,13 @@
 schema:
   schema_id: snow_pinyin
   name: 冰雪拼音
-  version: '1.0'
+  version: "1.0"
   author:
     - 谭淞宸 <i@tansongchen.com>
   description: |
     对标雾凇拼音的带调拼音输入方案
   dependencies:
-    - stroke
+    - snow_stroke
 
 switches:
   - name: ascii_mode
@@ -18,8 +18,8 @@ switches:
     states: [ 中文, 西文 ]
   - name: full_shape
     states: [ 半角, 全角 ]
-  - name: simplification
-    states: [ 漢字, 汉字 ]
+  - name: traditionalization
+    states: [ 汉字, 漢字 ]
   - name: ascii_punct
     states: [ 。，, ．， ]
 

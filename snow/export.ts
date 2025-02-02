@@ -110,7 +110,7 @@ function assemble(syllables: string[], rules: Replace[]) {
     .map((x, i) => (useCapital && i >= 4 ? x[0].toUpperCase() : x[0]))
     .join("");
   base += transformed.at(-1)!.slice(1, 3);
-  base += transformed[0]!.slice(1);
+  base += transformed[0]!.slice(1, 3);
   return base;
 }
 
@@ -172,12 +172,19 @@ const maxSingle = 8773;
 const maxMultiple = 60000;
 const useCapital = true;
 const encoded = simulate();
+
+const finalized: { word: string; code: string; importance: number }[] = [];
+for (const { word, code, importance } of encoded) {
+  const final = code.replaceAll("_", "").slice(0, 4);
+  if (final.includes(";") || final.includes("/")) continue;
+  finalized.push({ word, code: final, importance });
+}
 writeFileSync(
   "simulated.txt",
-  encoded
+  finalized
     .map(
       ({ word, code, importance }) =>
-        `${word}\t${[...code].join(' ')}\t${Math.round(importance * 100)}`
+        `${word}\t${[...code].join(" ")}\t${Math.round(importance * 100)}`
     )
     .join("\n"),
   "utf8"
