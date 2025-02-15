@@ -145,12 +145,6 @@ key_binder:
     # 翻页
     - { when: has_menu, accept: Tab, send: Page_Down }
     - { when: paging, accept: Shift+Tab, send: Page_Up }
-    # 定位
-    - { when: has_menu, accept: 1, send_sequence: "{Shift+Right}" }
-    - { when: has_menu, accept: 4, send_sequence: "{Shift+Right}{Shift+Right}" }
-    - { when: has_menu, accept: 5, send_sequence: "{Shift+Right}{Shift+Right}{Shift+Right}" }
-    - { when: has_menu, accept: 6, send_sequence: "{Shift+Right}{Shift+Right}{Shift+Right}{Shift+Right}" }
-    - { when: has_menu, accept: 7, send_sequence: "{End}" }
     # 切换
     - { accept: "Control+Shift+1", select: .next, when: always }
     - { accept: "Control+Shift+2", toggle: ascii_mode, when: always }

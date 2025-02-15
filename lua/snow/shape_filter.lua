@@ -1,15 +1,18 @@
+-- 辅助码过滤器
+-- 本过滤器根据上下文中的形码输入，过滤候选词，并在候选词上显示形码提示。
+
 local snow = require "snow.snow"
 
 ---@class AssistEnv: Env
 ---@field strokes table<string, string>
----@field radicals table<string, string>
----@field radical_map table<string, string>
----@field hint string?
----@field hint_type string?
----@field stroke_map table<string, string>
----@field reverse_stroke_map table<string, string>
+---@field radicals_gf0012 table<string, string>
+---@field radicals_xingpang table<string, string>
+---@field radical_sipin table<string, string>
+---@field radical_shengjie table<string, string>
+---@field xkjd table<string, string>
+---@field xkjd_chaifen table<string, string>
 
---- split a UTF-8 string into a list of characters, and lookup each character in a map
+--- 将字符串中每一个字符替换为 map 中对应的值
 ---@param element string
 ---@param map table<string, string>
 local function encode(element, map)
@@ -20,6 +23,32 @@ local function encode(element, map)
     if value then
       result = result .. value
     end
+  end
+  return result
+end
+
+--- 键道的特殊处理
+---@param text string
+---@param current string
+---@param map table<string, string>
+local function jiandao_encode(text, current, map)
+  -- 把 UTF-8 编码的词语拆成单个字符的列表
+  local characters = {}
+  for _, char in utf8.codes(text) do
+    table.insert(characters, utf8.char(char))
+  end
+  local result = ""
+  if #characters == 2 and current:len() == 1 then -- 630
+    result = (map[characters[2]] or "??"):sub(1, 2)
+  elseif #characters == 1 then
+    -- 如果只有一个字符，直接返回对应的编码
+    result = map[characters[1]] or "??"
+  elseif #characters == 3 then
+    -- 如果有三个字符，返回第一个字符的编码和第二个字符的编码
+    result = (map[characters[1]] or "?"):sub(1, 1) .. (map[characters[2]] or "?"):sub(1, 1) .. (map[characters[3]] or "?"):sub(1, 1)
+  elseif #characters >= 2 then
+    -- 如果有两个字符，返回第一个字符的编码和第二个字符的编码
+    result = (map[characters[1]] or "?"):sub(1, 1) .. (map[characters[2]] or "?"):sub(1, 1)
   end
   return result
 end
@@ -48,25 +77,84 @@ local filter = {}
 
 ---@param env AssistEnv
 function filter.init(env)
-  local config = env.engine.schema.config
   local dir = rime_api.get_user_data_dir() .. "/lua/snow/"
   env.strokes = table_from_tsv(dir .. "strokes.txt")
-  local radicals_file = config:get_string("speller/radicals")
-  env.radicals = table_from_tsv(dir .. radicals_file)
-  local radical_map_file = config:get_string("speller/radical_map")
-  env.radical_map = table_from_tsv(dir .. radical_map_file)
-  env.hint_type = config:get_string("speller/hint_type")
-  env.hint = config:get_string("speller/hint_shape")
-  env.stroke_map = {}
-  env.reverse_stroke_map = {}
-  local raw = config:get_map("speller/strokes")
-  if not raw then return end
-  for _, key in ipairs(raw:keys()) do
-    local value = raw:get_value(key)
-    if value then
-      local value_str = value:get_string()
-      env.stroke_map[key] = value_str
-      env.reverse_stroke_map[value_str] = key
+  env.radicals_gf0012 = table_from_tsv(dir .. "radicals_gf0012.txt")
+  env.radicals_xingpang = table_from_tsv(dir .. "radicals_xingpang.txt")
+  env.radical_sipin = table_from_tsv(dir .. "radical_sipin.txt")
+  env.radical_shengjie = table_from_tsv(dir .. "radical_shengjie.txt")
+  env.xkjd = table_from_tsv(dir .. "xkjd.txt")
+  env.xkjd_chaifen = table_from_tsv(dir .. "xkjd_chaifen.txt")
+end
+
+---@param text string
+---@param shape_input string
+---@param env AssistEnv
+function filter.handle_candidate(text, shape_input, env)
+  local current = snow.current(env.engine.context)
+  local id = env.engine.schema.schema_id
+  if id == "snow_sipin" then -- 冰雪四拼
+    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrwyv][aeiou]{3}")) then
+      local code = ""
+      local partial_code = ""
+      ---@type string?
+      local prompt = ""
+      local comment = ""
+      if shape_input:sub(1, 1) == "1" then
+        partial_code = shape_input:sub(2)
+        local element = env.radicals_gf0012[text] or ""
+        code = encode(element, env.radical_sipin)
+        prompt = " 部首 [" .. partial_code .. "]"
+        comment = code .. " " .. element
+      else
+        partial_code = shape_input
+        local element = env.strokes[text] or ""
+        code = encode(element, { ["一"] = "e", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
+        prompt = partial_code:len() > 0 and " 笔画 [" .. partial_code:gsub(".", { ["e"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]" or nil
+        comment = code
+      end
+      local match = not code or code:sub(1, #partial_code) == partial_code
+      return match, prompt, comment
+    else
+      return true, nil, nil
+    end
+  elseif id == "snow_sanpin" then -- 冰雪三拼
+    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]")) then
+      local code = ""
+      local partial_code = ""
+      local prompt = ""
+      local comment = ""
+      if shape_input:sub(1, 1) == "1" then
+        partial_code = shape_input:sub(2)
+        local element = env.radicals_gf0012[text] or ""
+        code = encode(element, env.radical_sipin)
+        prompt = " 部首 [" .. partial_code .. "]"
+        comment = code .. " " .. element
+      else
+        partial_code = shape_input
+        local element = env.strokes[text] or ""
+        code = encode(element, { ["一"] = "v", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
+        prompt = " 笔画 [" .. partial_code:gsub(".", { ["v"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]"
+        comment = code
+      end
+      local match = not code or code:sub(1, #partial_code) == partial_code
+      return match, prompt, comment
+    else
+      return true, nil, nil
+    end
+  elseif id == "snow_jiandao" then -- 冰雪键道
+    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z]([bpmfdtnlgkhjqxzcsrywe][a-z]?)?")) then
+      local code = jiandao_encode(text, current or "", env.xkjd)
+      local prompt = shape_input:len() > 0 and " 形 [" .. shape_input .. "]" or nil
+      local match = not code or code:sub(1, #shape_input) == shape_input
+      local comment = code
+      if utf8.len(text) == 1 and env.engine.context:get_option("chaifen") then
+        local chaifen = env.xkjd_chaifen[text] or ""
+        comment = code .. " " .. chaifen
+      end
+      return match, prompt, comment
+    else
+      return true, nil, nil
     end
   end
 end
@@ -76,55 +164,20 @@ end
 function filter.func(translation, env)
   local context = env.engine.context
   local shape_input = context:get_property("shape_input")
-  -- 有形码输入，进行过滤
-  if shape_input:len() > 0 then
-    for candidate in translation:iter() do
-      local element = ""
-      local code = ""
-      local prompt = ""
-      local comment = ""
-      local partial_code = ""
-      if shape_input:sub(1, 1) == "1" then
-        partial_code = shape_input:sub(2)
-        element = env.radicals[candidate.text] or ""
-        code = encode(element, env.radical_map)
-        prompt = " 部首 [" .. partial_code .. "]"
-        comment = code .. " " .. element
-      else
-        partial_code = shape_input
-        element = env.strokes[candidate.text] or ""
-        code = encode(element, env.stroke_map)
-        prompt = " 笔画 [" .. partial_code:gsub(".", env.reverse_stroke_map) .. "]"
-        comment = code
-      end
-      if not code or code:sub(1, #partial_code) == partial_code then
-        candidate.comment = comment
-        candidate.preedit = candidate.preedit .. prompt
-        yield(candidate)
-      end
-    end
-  else
-    local current = snow.current(env.engine.context)
-    -- 仅提示不过滤
-    if env.hint and env.hint_type and current and rime_api.regex_match(current, env.hint) then
-      for candidate in translation:iter() do
-        if env.hint_type == "stroke" then
-          local element = env.strokes[candidate.text] or ""
-          local code = encode(element, env.stroke_map)
-          candidate.comment = code
-        elseif env.hint_type == "radical" then
-          local element = env.radicals[candidate.text] or ""
-          local code = encode(element, env.radical_map)
-          candidate.comment = code .. " " .. element
-        end
-        yield(candidate)
-      end
-    else
-      for candidate in translation:iter() do
-        yield(candidate)
-      end
+  for candidate in translation:iter() do
+    local show, prompt, comment = filter.handle_candidate(candidate.text, shape_input, env)
+    if show then
+      if comment then candidate.comment = comment end
+      if prompt then candidate.preedit = candidate.preedit .. prompt end
+      yield(candidate)
     end
   end
+end
+
+---@param segment Segment
+---@param env Env
+function filter.tags_match(segment, env)
+  return segment:has_tag("abc")
 end
 
 return filter

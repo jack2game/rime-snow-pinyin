@@ -1,3 +1,6 @@
+-- 辅助码处理器
+-- 本处理器接受辅助码按键，把它们放到上下文中
+
 local snow = require "snow.snow"
 
 ---@param env Env

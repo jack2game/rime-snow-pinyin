@@ -35,6 +35,10 @@ function this.func(translation, env)
   if not input then
     return
   end
+  local shape_input = context:get_property("shape_input")
+  if shape_input then
+    input = input .. shape_input
+  end
   -- 删除与当前编码长度相等或者更长的已知候选，这些对当前输入无帮助
   for k, v in pairs(env.known_candidates) do
     if v >= input:len() then

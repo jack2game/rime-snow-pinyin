@@ -173,11 +173,14 @@ const maxMultiple = 60000;
 const useCapital = true;
 const encoded = simulate();
 
+const stats = new Map<number, number>();
 const finalized: { word: string; code: string; importance: number }[] = [];
 for (const { word, code, importance } of encoded) {
   const final = code.replaceAll("_", "").slice(0, 4);
   if (final.includes(";") || final.includes("/")) continue;
   finalized.push({ word, code: final, importance });
+  const len = [...word].length;
+  stats.set(len, (stats.get(len) ?? 0) + 1);
 }
 writeFileSync(
   "simulated.txt",
@@ -195,3 +198,8 @@ writeFileSync(
   encoded.map(({ word, code }) => `${code}\t${word}`).join("\n"),
   "utf8"
 );
+
+const sorted = [...stats].sort((a, b) => a[0] - b[0]);
+sorted.forEach(([v, k]) => {
+  console.log(`${v} 字词数量为 ${k}`);
+});

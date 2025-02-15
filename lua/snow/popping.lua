@@ -27,15 +27,14 @@ local strategies = {
 function this.init(env)
   env.speller = Component.Processor(env.engine, "", "speller")
   env.engine.context.option_update_notifier:connect(function(ctx, name)
-    if name == "is_buffered" then
-      local is_buffered = ctx:get_option("is_buffered")
-      ctx:set_option("_auto_commit", not is_buffered)
+    if name == "buffered" then
+      local buffered = ctx:get_option("buffered")
+      ctx:set_option("_auto_commit", not buffered)
     end
   end)
   env.engine.context.commit_notifier:connect(function(ctx)
-    if ctx:get_option("temp_buffered") then
-      ctx:set_option("temp_buffered", false)
-      ctx:set_option("is_buffered", false)
+    if ctx:get_option("buffered") then
+      ctx:set_option("buffered", false)
     end
   end)
   local config = env.engine.schema.config
@@ -70,7 +69,7 @@ end
 ---@param env PoppingEnv
 function this.func(key_event, env)
   local context = env.engine.context
-  local is_buffered = context:get_option("is_buffered")
+  local buffered = context:get_option("buffered")
   if key_event:release() or key_event:alt() or key_event:ctrl() or key_event:caps() then
     return snow.kNoop
   end
@@ -78,6 +77,10 @@ function this.func(key_event, env)
   local input = snow.current(context)
   if not input then
     return snow.kNoop
+  end
+  local shape_input = context:get_property("shape_input")
+  if shape_input then
+    input = input .. shape_input
   end
   -- Rime 有一个 bug，在按句号键之后的那个字词的编码的会有一个隐藏的 "."
   -- 这导致顶功判断失败，所以先屏蔽了。但是这个对用 "." 作为编码的方案会有影响
@@ -119,7 +122,7 @@ function this.func(key_event, env)
     -- 如果当前有候选，则执行顶屏；否则顶功失败，继续执行下一个规则
     if context:has_menu() then
       context:confirm_current_selection()
-      if not is_buffered then
+      if not buffered then
         context:commit()
       end
       success = true

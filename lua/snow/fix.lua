@@ -49,6 +49,10 @@ function this.func(translation, env)
   if not segment or not input then
     return snow.kNoop
   end
+  local shape_input = context:get_property("shape_input")
+  if shape_input then
+    input = input .. shape_input
+  end
   local fixed_phrases = env.fixed[input]
   if not fixed_phrases then
     for candidate in translation:iter() do
@@ -89,7 +93,7 @@ function this.func(translation, env)
   -- 因为不知道全码是什么，所以只能做一个 SimpleCandidate
   while fixed_phrases[i] do
     local candidate = Candidate("fixed", segment.start, segment._end, fixed_phrases[i], "")
-    candidate.preedit = input
+    candidate.preedit = snow.current(context) or ""
     i = i + 1
     yield(candidate)
   end

@@ -46,6 +46,13 @@ function t12.func(input, segment, env)
     for candidate in translation:iter() do
       yield(snow.prepare(candidate, input, true))
     end
+    if input:len() == 2 then
+      local proxy = ("%s %s"):format(input:sub(1, 1), input:sub(2))
+      local translation = env.translator:query(proxy, segment)
+      for candidate in translation:iter() do
+        yield(snow.prepare(candidate, proxy, true))
+      end
+    end
   end
   -- 二字词
   if rime_api.regex_match(input, env.pattern2) then
@@ -82,7 +89,7 @@ function t3.func(input, segment, env)
     end
     local translation = env.translator:query(proxy, segment)
     for candidate in translation:iter() do
-      if utf8.len(candidate.text) == 3 then
+      if utf8.len(candidate.text) == 3 and candidate.type ~= "sentence" then
         yield(snow.prepare(candidate, proxy, false))
       end
     end
@@ -117,7 +124,9 @@ function t4.func(input, segment, env)
     end
     local translation = env.translator:query(proxy, segment)
     for candidate in translation:iter() do
-      yield(snow.prepare(candidate, proxy, false))
+      if utf8.len(candidate.text) >= 4 and candidate.type ~= "sentence" then
+        yield(snow.prepare(candidate, proxy, false))
+      end
     end
   end
 end
