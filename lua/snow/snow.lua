@@ -82,4 +82,25 @@ function snow.prepare(candidate, proxy, normal)
   return candidate
 end
 
+---@param path string
+function snow.table_from_tsv(path)
+  ---@type table<string, string>
+  local result = {}
+  local file = io.open(path, "r")
+  if not file then
+    return result
+  end
+  for line in file:lines() do
+    ---@type string, string
+    local character, content = line:match("([^\t]+)\t([^\t]+)")
+    if not content or not character then
+      goto continue
+    end
+    result[character] = content
+    ::continue::
+  end
+  file:close()
+  return result
+end
+  
 return snow

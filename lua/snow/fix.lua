@@ -39,6 +39,26 @@ function this.tags_match(segment, env)
   return segment:has_tag("abc")
 end
 
+---@param context Context
+---@param fixed_phrases string[]
+---@param unknown_candidates Candidate[]
+---@param i number
+---@param segment Segment
+function this.finalize(fixed_phrases, unknown_candidates, i, segment, context)
+  -- 输出设为固顶但是没在候选中找到的候选
+  -- 因为不知道全码是什么，所以只能做一个 SimpleCandidate
+  while fixed_phrases[i] do
+    local simple_candidate = Candidate("fixed", segment.start, segment._end, fixed_phrases[i], "")
+    simple_candidate.preedit = snow.current(context) or ""
+    i = i + 1
+    yield(simple_candidate)
+  end
+  -- 输出没有固顶的候选
+  for _, unknown_candidate in ipairs(unknown_candidates) do
+    yield(unknown_candidate)
+  end
+end
+
 ---@param translation Translation
 ---@param env SnowFixedFilterEnv
 function this.func(translation, env)
@@ -66,7 +86,21 @@ function this.func(translation, env)
   ---@type { string: Candidate }
   local known_candidates = {}
   local i = 1
+  -- 总共处理的候选数，多了就不处理了
+  local total_candidates = 0
+  local max_candidates = 100
+  local finalized = false
   for candidate in translation:iter() do
+    total_candidates = total_candidates + 1
+    if total_candidates == max_candidates then
+      this.finalize(fixed_phrases, unknown_candidates, i, segment, context)
+      finalized = true
+      yield(candidate)
+      goto continue
+    elseif total_candidates > max_candidates then
+      yield(candidate)
+      goto continue
+    end
     local text = candidate.text
     local is_fixed = false
     -- 对于一个新的候选，要么加入已知候选，要么加入未知候选
@@ -88,18 +122,10 @@ function this.func(translation, env)
       yield(cand)
       i = i + 1
     end
+    ::continue::
   end
-  -- 输出设为固顶但是没在候选中找到的候选
-  -- 因为不知道全码是什么，所以只能做一个 SimpleCandidate
-  while fixed_phrases[i] do
-    local candidate = Candidate("fixed", segment.start, segment._end, fixed_phrases[i], "")
-    candidate.preedit = snow.current(context) or ""
-    i = i + 1
-    yield(candidate)
-  end
-  -- 输出没有固顶的候选
-  for _, candidate in ipairs(unknown_candidates) do
-    yield(candidate)
+  if not finalized then
+    this.finalize(fixed_phrases, unknown_candidates, i, segment, context)
   end
 end
 

@@ -53,38 +53,18 @@ local function jiandao_encode(text, current, map)
   return result
 end
 
-local function table_from_tsv(path)
-  ---@type table<string, string>
-  local result = {}
-  local file = io.open(path, "r")
-  if not file then
-    return result
-  end
-  for line in file:lines() do
-    ---@type string, string
-    local character, content = line:match("([^\t]+)\t([^\t]+)")
-    if not content or not character then
-      goto continue
-    end
-    result[character] = content
-    ::continue::
-  end
-  file:close()
-  return result
-end
-
 local filter = {}
 
 ---@param env AssistEnv
 function filter.init(env)
   local dir = rime_api.get_user_data_dir() .. "/lua/snow/"
-  env.strokes = table_from_tsv(dir .. "strokes.txt")
-  env.radicals_gf0012 = table_from_tsv(dir .. "radicals_gf0012.txt")
-  env.radicals_xingpang = table_from_tsv(dir .. "radicals_xingpang.txt")
-  env.radical_sipin = table_from_tsv(dir .. "radical_sipin.txt")
-  env.radical_shengjie = table_from_tsv(dir .. "radical_shengjie.txt")
-  env.xkjd = table_from_tsv(dir .. "xkjd.txt")
-  env.xkjd_chaifen = table_from_tsv(dir .. "xkjd_chaifen.txt")
+  env.strokes = snow.table_from_tsv(dir .. "strokes.txt")
+  env.radicals_gf0012 = snow.table_from_tsv(dir .. "radicals_gf0012.txt")
+  env.radicals_xingpang = snow.table_from_tsv(dir .. "radicals_xingpang.txt")
+  env.radical_sipin = snow.table_from_tsv(dir .. "radical_sipin.txt")
+  env.radical_shengjie = snow.table_from_tsv(dir .. "radical_shengjie.txt")
+  env.xkjd = snow.table_from_tsv(dir .. "xkjd.txt")
+  env.xkjd_chaifen = snow.table_from_tsv(dir .. "xkjd_chaifen.txt")
 end
 
 ---@param text string
@@ -151,6 +131,9 @@ function filter.handle_candidate(text, shape_input, env)
       if utf8.len(text) == 1 and env.engine.context:get_option("chaifen") then
         local chaifen = env.xkjd_chaifen[text] or ""
         comment = code .. " " .. chaifen
+      end
+      if (current or ""):len() == 1 then
+        comment = "" -- 630 不需要提示
       end
       return match, prompt, comment
     else

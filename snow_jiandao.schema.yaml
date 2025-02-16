@@ -58,6 +58,7 @@ engine:
     - uniquifier
     - lua_filter@*snow.shape_filter
     - simplifier
+    - lua_filter@*snow.hint
 
 speller:
   alphabet: bpmfdtnlgkhjqxzcsrwye
@@ -69,7 +70,8 @@ speller:
       accept: "[viuoa]"
   popping:
     # 630
-    - match: "[bpmfdtnlgkhjqxzcsrywe][viuoa]+"
+    - when: popping
+      match: "[bpmfdtnlgkhjqxzcsrywe][viuoa]+"
       accept: "[bpmfdtnlgkhjqxzcsrywe]"
     # 单字三码顶
     - when: popping
@@ -131,8 +133,8 @@ patch:
       states: [默认, 拆分]
       reset: 1
     - name: buffered
-      states: [上屏, 缓冲]
+      states: [结束, 缓冲]
       reset: 0
-  # key_binder/bindings/+:
-  #   - { when: composing, accept: semicolon, toggle: buffered }
+  key_binder/bindings/+:
+    - { when: always, accept: Shift+space, toggle: buffered }
   menu/alternative_select_keys: null

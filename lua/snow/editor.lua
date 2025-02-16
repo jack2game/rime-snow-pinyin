@@ -17,15 +17,6 @@ function this.func(key_event, env)
     return snow.kNoop
   end
   local incoming = key_event:repr()
-  -- 如果输入为空格或数字，代表着作文即将上屏，此时把 kConfirmed 的片段改为 kSelected
-  -- 这解决了 https://github.com/rime/home/issues/276 中的不造词问题
-  if rime_api.regex_match(incoming, "\\d") or incoming == "space" then
-    for _, segment in ipairs(context.composition:toSegmentation():get_segments()) do
-      if segment.status == snow.kConfirmed then
-        segment.status = snow.kSelected
-      end
-    end
-  end
   -- 只在顶功模式下生效
   if not context:get_option("popping") then
     return snow.kNoop
