@@ -139,6 +139,20 @@ function filter.handle_candidate(text, shape_input, env)
     else
       return true, nil, nil
     end
+  elseif id == "snow_yipin" then -- 冰雪一拼
+    local partial_code = ""
+    local prompt = ""
+    local element = env.radicals_xingpang[text] or ""
+    local code = encode(element, env.radical_shengjie)
+    local comment = code .. " " .. element
+    if shape_input:sub(1, 1) == "v" then
+      partial_code = shape_input:sub(2, -2)
+      prompt = " [" .. partial_code .. "]"
+    end
+    local match = partial_code == "" or code == partial_code
+    return match, prompt, comment
+  else
+    return true, nil, nil
   end
 end
 

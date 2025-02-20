@@ -1,10 +1,12 @@
 # Rime schema
 # encoding: utf-8
 
+__include: snow_pinyin.schema.yaml:/
+
 schema:
   schema_id: snow_yipin
   name: 冰雪一拼
-  version: "0.1"
+  version: "0.2.0"
   author:
     - 张皓哲 <576440085@qq.com>
     - 谭淞宸 <i@tansongchen.com>
@@ -14,24 +16,11 @@ schema:
   dependencies:
     - snow_pinyin
 
-switches:
-  - name: ascii_mode
-    reset: 0
-    states: [ 中文, 西文 ]
-  - name: full_shape
-    states: [ 半角, 全角 ]
-  - name: traditionalization
-    states: [ 汉字, 漢字 ]
-  - name: ascii_punct
-    states: [ 。，, ．， ]
-  - name: popping
-    states: [ 整句, 顶功 ]
-    reset: 1
-
 engine:
   processors:
     - ascii_composer
     - chord_composer
+    - recognizer
     - lua_processor@*snow.shape_processor
     - lua_processor@*snow.combo_popping
     - key_binder
@@ -58,28 +47,35 @@ engine:
 chord_composer:
   alphabet: 'qazwsxedcrfvtgbyhnujmik,ol.p;/ '
   algebra:
+    # 双手并击，打出音节
+    - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+)$| $1  $2 |
+    # 双手带空格并击，打出追加音节，这里 u 表示追加
+    - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+) $|u $1  $2 |
+    # 左手或右手带空格并击，打出辅助码
+    - xform/^([qazwsxedcrfvtgb]+) $/v $1 v/
+    - xform/^([yhnujmikolp]+) $/v$1$1v/
     # 左手并击，打出声介
     - xform/^([qazwsxedcrfvtgb]+)$/ $1  /
     # 右手并击，打出符号和功能键
-    - xform|^h$|/duh |
-    - xform|^j$|/dh |
-    - xform|^k$|/jh |
-    - xform|^l$|/wh |
-    - xform|^y$|/pzh |
-    - xform|^u$|/zsyh |
-    - xform|^i$|/ysyh |
-    - xform|^o$|/mh |
-    - xform|^p$|/fh |
-    - xform|^n$|/slh |
-    - xform|^m$|/th |
-    - xform|^ui$|/zkh |
-    - xform|^io$|/ykh |
-    - xform|^uo$|/zsmh |
-    - xform|^up$|/ysmh |
-    - xform|^m,$|/fgh |
-    - xform|^,\.$|/blh |
-    - xform|^m\.$|/zdyh |
-    - xform|^m\/$|/ydyh |
+    - xform|^h$|iduh |
+    - xform|^j$|idh |
+    - xform|^k$|ijh |
+    - xform|^l$|iwh |
+    - xform|^y$|ipzh |
+    - xform|^u$|izsyh |
+    - xform|^i$|iysyh |
+    - xform|^o$|imh |
+    - xform|^p$|ifh |
+    - xform|^n$|islh |
+    - xform|^m$|ith |
+    - xform|^ui$|izkh |
+    - xform|^io$|iykh |
+    - xform|^uo$|izsmh |
+    - xform|^up$|iysmh |
+    - xform|^m,$|ifgh |
+    - xform|^,\.$|iblh |
+    - xform|^m\.$|izdyh |
+    - xform|^m\/$|iydyh |
     - xform/^jk$/- /
     - xform/^kl$/-- /
     - xform/^jl$/--- /
@@ -87,13 +83,6 @@ chord_composer:
     - xform/-/{Right}/
     - xform/^hk$/{Page_Up}/
     - xform/^hl$/{Page_Down}/
-    # 左手或右手带空格并击，打出辅助码
-    - xform/^([qazwsxedcrfvtgb]+) $/+ $1 q/
-    - xform/^([yhnujmikolp]+) $/+v$1q/
-    # 双手并击，打出音节
-    - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+)$| $1  $2 |
-    # 双手带空格并击，打出追加音节
-    - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+) $|v $1  $2 |
     # 左手声介
     - xform/ zv /ng/
     - xform/ d /ngi/
@@ -191,7 +180,7 @@ chord_composer:
     - xform/ ml /ou2/
     - xform/ up /ou3/
     - xform/ m\. /ou4/
-    - xlit/+1234/1flxh/
+    - xlit/1234/flxh/
   prompt_format:
     # 加方括弧
     - 'xform/^(.*)$/[$1]/'
@@ -204,16 +193,12 @@ editor:
 speller:
   alphabet: "bpmfdtnlgkhjqxzcsrywaeiouv"
   initials: "bpmfdtnlgkhjqxzcsryw"
-  radicals: "radicals_xingpang.txt"
-  radical_map: "radical_shengjie.txt"
   shape:
-    - match: ".+"
-      accept: "1"
-    # q 表示辅助码结束
-    - match_shape: "1|1.*([^q])"
+    # v 表示辅助码结束
+    - match: "[bpmfdtnlgkhjqxzcsr][gh]?[iuv]?(a|ai|an|ang|ao|e|ei|en|eng|ou)?[flxh]"
+      accept: "v"
+    - match_shape: "v[^v]*"
       accept: "[a-z]"
-  hint_shape: ".+"
-  hint_type: "radical"
   algebra:
     - xform/5/1/
     # 合并边缘音节
@@ -263,7 +248,7 @@ translator:
     # 补足隐含的韵母
     - xform/(?<=[bpmf])(?=\d)/u/
     - xform/(?<=[zcsrh])(?=\d)/i/
-    - xform/(?<=ng)(?=\d)/er/
+    - xform/^ng(?=\d)/nger/
     # 全拼的正字法
     - xform/ngi(n\d|ng\d|\d)/yi$1/
     - xform/ngi/y/
@@ -319,39 +304,40 @@ punctuator:
     '<' : '<'
     '.' : '.'
     '>' : '>'
-    '/' : ['/', '／']
+    '/' : '/'
     '?' : '?'
   symbols:
-    __include: symbols.yaml:/punctuator/symbols
-    '/th': '！'
-    '/slh': '……'
-    '/zkh': '（'
-    '/ykh': '）'
-    '/fgh': '·'
-    '/blh': '～'
-    '/pzh': '——'
-    '/fh': '；'
-    '/mh': '：'
-    '/zdyh': '‘'
-    '/ydyh': '’'
-    '/zsyh': '“'
-    '/ysyh': '”'
-    '/dh': '，'
-    '/zsmh': '《'
-    '/jh': '。'
-    '/ysmh': '》'
-    '/duh': '、'
-    '/wh': '？'
+    __include: snow_pinyin.schema.yaml:/punctuator/symbols
+    'ith': '！'
+    'islh': '……'
+    'izkh': '（'
+    'iykh': '）'
+    'ifgh': '·'
+    'iblh': '～'
+    'ipzh': '——'
+    'ifh': '；'
+    'imh': '：'
+    'izdyh': '‘'
+    'iydyh': '’'
+    'izsyh': '“'
+    'iysyh': '”'
+    'idh': '，'
+    'izsmh': '《'
+    'ijh': '。'
+    'iysmh': '》'
+    'iduh': '、'
+    'iwh': '？'
 
-key_binder:
-  bindings:
+__patch:
+  - patch
+  - snow_yipin.custom:/patch?
+
+patch:
+  switches/+:
+    - name: popping
+      states: [整句, 顶功]
+      reset: 1
+  key_binder/bindings/+:
     - { when: composing, accept: bracketright, send: Page_Down }
     - { when: composing, accept: bracketleft, send: Page_Up }
-
-recognizer:
-  patterns:
-    punct: '/([0-9]0?|[A-Za-z]+)?$'
-
-simplifier:
-  opencc_config: s2t.json
-  option_name: traditionalization
+  menu/alternative_select_keys: null

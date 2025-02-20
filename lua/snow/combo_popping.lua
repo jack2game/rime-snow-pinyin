@@ -29,15 +29,17 @@ function processor.func(key_event, env)
     return snow.kNoop
   end
   local incoming = utf8.char(key_event.keycode)
-  if incoming == "v" then
-    env.active = false
-    return snow.kAccepted
-  elseif rime_api.regex_match(incoming, "[a-z]") then
-    if env.active and rime_api.regex_match(input, ".*[bpmfdtnlgkhjqxzcsr][gh]?[iuv]?(a|ai|an|ang|ao|e|ei|en|eng|ou)?[flxh]") then
-      context:confirm_current_selection()
-      context:commit()
-    else
-      env.active = true
+  if rime_api.regex_match(input, ".*[bpmfdtnlgkhjqxzcsr][gh]?[iuv]?(a|ai|an|ang|ao|e|ei|en|eng|ou)?[flxh]") then
+    if incoming == "i" then -- 在完整音节后面出现 i ，表示追加
+      env.active = false
+      return snow.kAccepted
+    elseif rime_api.regex_match(incoming, "[a-z]") then
+      if env.active then
+        context:confirm_current_selection()
+        context:commit()
+      else
+        env.active = true
+      end
     end
     return snow.kNoop
   else

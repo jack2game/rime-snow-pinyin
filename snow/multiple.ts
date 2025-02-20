@@ -321,6 +321,20 @@ const diff2 = {
   丈夫: "zhàng fū",
   豆腐: "dòu fǔ",
   喜欢: "xǐ huān",
+  生意: "shēng yì",
+  眉毛: "méi máo",
+  混混: "hùn hùn",
+  财主: "cái zhǔ",
+  厚道: "hòu dào",
+  里脊: "lǐ jǐ",
+  格格: "gé gé",
+  闺女: "guī nǚ",
+  磨叽: "mó jī",
+  杠杠: "gàng gàng",
+  框框: "kuàng kuàng",
+  精神: "jīng shén",
+  揉搓: "róu cuō",
+  垃圾: "lā jī",
 };
 const diff3 = {
   实际上: "shí jì shàng",
@@ -478,6 +492,7 @@ const diff4 = {
   不亦善夫: "bù yì shàn fū",
   叶落归根: "yè luò guī gēn",
   枝大于本: "zhī dà yú běn",
+  还珠格格: "huán zhū gé gé",
 };
 const diff5 = {
   行行出状元: "háng háng chū zhuàng yuán",

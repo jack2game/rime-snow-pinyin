@@ -1,0 +1,15 @@
+schema_list:
+  - schema: snow_sipin
+  - schema: snow_sanpin
+  - schema: snow_jiandao
+  - schema: snow_yipin
+
+ascii_composer:
+  good_old_caps_lock: true
+  switch_key:
+    Caps_Lock: clear
+    Control_L: noop
+    Control_R: noop
+    Eisu_toggle: clear
+    Shift_L: inline_ascii
+    Shift_R: commit_text

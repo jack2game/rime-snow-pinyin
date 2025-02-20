@@ -1,5 +1,5 @@
 -- 模拟码表翻译器
--- 适用于：冰雪三拼
+-- 适用于：冰雪三拼、冰雪键道
 
 local snow = require "snow.snow"
 
@@ -7,25 +7,6 @@ local snow = require "snow.snow"
 ---@field translator Translator
 ---@field pattern string
 ---@field pattern2 string
-
-local t0 = {}
-
----@param env ProxyTranslatorEnv
-function t0.init(env)
-  env.translator = Component.Translator(env.engine, "translator", "script_translator")
-end
-
----@param input string
----@param segment Segment
----@param env ProxyTranslatorEnv
-function t0.func(input, segment, env)
-  if env.engine.context:get_option("popping") == false then
-    local translation = env.translator:query(input, segment)
-    for candidate in translation:iter() do
-      yield(candidate)
-    end
-  end
-end
 
 local t12 = {}
 
@@ -41,15 +22,15 @@ end
 ---@param env ProxyTranslatorEnv
 function t12.func(input, segment, env)
   -- 一字词
-  if rime_api.regex_match(input, env.pattern) then
+  if rime_api.regex_match(input, env.pattern) or env.engine.context:get_option("popping") == false then
     local translation = env.translator:query(input, segment)
     for candidate in translation:iter() do
       yield(snow.prepare(candidate, input, true))
     end
     if input:len() == 2 then
       local proxy = ("%s %s"):format(input:sub(1, 1), input:sub(2))
-      local translation = env.translator:query(proxy, segment)
-      for candidate in translation:iter() do
+      local translation2 = env.translator:query(proxy, segment)
+      for candidate in translation2:iter() do
         yield(snow.prepare(candidate, proxy, true))
       end
     end
@@ -96,22 +77,22 @@ function t3.func(input, segment, env)
   end
 end
 
-local t4 = {}
+local jianpin = {}
 
 ---@param env ProxyTranslatorEnv
-function t4.init(env)
-  env.translator = Component.Translator(env.engine, "translator", "script_translator")
-  env.pattern = env.engine.schema.config:get_string("translator/t4_pattern") or "^.+$"
+function jianpin.init(env)
+  env.translator = Component.Translator(env.engine, "jianpin", "script_translator")
+  env.pattern = env.engine.schema.config:get_string("translator/jianpin_pattern") or "^.+$"
 end
 
 ---@param input string
 ---@param segment Segment
 ---@param env ProxyTranslatorEnv
-function t4.func(input, segment, env)
+function jianpin.func(input, segment, env)
   -- 多字词
   if rime_api.regex_match(input, env.pattern) then
-    local proxy = input:sub(1, 4):gsub(".", "%1 "):sub(1, -2)
-    local buma = input:sub(5)
+    local proxy = input:gsub("[viuoa]", "")
+    local buma = input:gsub("[bpmfdtnlgkhjqxzcsrywe]", "");
     if buma:len() == 1 then
       proxy = ("%s?%s"):format(proxy, buma)
     elseif buma:len() == 2 then
@@ -124,16 +105,15 @@ function t4.func(input, segment, env)
     end
     local translation = env.translator:query(proxy, segment)
     for candidate in translation:iter() do
-      if utf8.len(candidate.text) >= 4 and candidate.type ~= "sentence" then
-        yield(snow.prepare(candidate, proxy, false))
+      if candidate.type ~= "sentence" then
+        yield(candidate)
       end
     end
   end
 end
 
 return {
-  t0 = t0,
   t12 = t12,
   t3 = t3,
-  t4 = t4,
+  jianpin = jianpin,
 }

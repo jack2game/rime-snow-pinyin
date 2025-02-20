@@ -6,7 +6,7 @@ __include: snow_pinyin.schema.yaml:/
 schema:
   schema_id: snow_jiandao
   name: 冰雪键道
-  version: "0.1"
+  version: "0.2.0"
   author:
     - 吅吅大山
     - 谭淞宸 <i@tansongchen.com>
@@ -15,6 +15,7 @@ schema:
   dependencies:
     - snow_pinyin
     - snow_stroke
+    - snow_jiandao_jianpin
 
 engine:
   processors:
@@ -22,7 +23,6 @@ engine:
     - recognizer
     - lua_processor@*snow.shape_processor
     - key_binder
-    - lua_processor@*snow.abbreviation
     - lua_processor@*snow.select_character
     - lua_processor@*snow.popping
     - speller
@@ -40,10 +40,8 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - lua_translator@*snow.table_like*t0
     - lua_translator@*snow.table_like*t12
-    - lua_translator@*snow.table_like*t3
-    - lua_translator@*snow.table_like*t4
+    - lua_translator@*snow.table_like*jianpin
     - table_translator@stroke
     - script_translator@pinyin
     - lua_translator@*snow.datetime
@@ -108,8 +106,15 @@ translator:
   disable_postpone_pattern: '^[bpmfdtnlgkhjqxzcsrywe][a-z][bpmfdtnlgkhjqxzcsrywe]$'
   t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?"
   t2_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4}"
-  t3_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3}"
-  t4_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4,}"
+  jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3,}"
+
+jianpin:
+  dictionary: snow_pinyin
+  prism: snow_jiandao_jianpin
+  packs:
+    - snow_pinyin.base
+    - snow_pinyin.ext
+    - snow_pinyin.tencent
 
 lookup_sanpin:
   tags: [pinyin]
@@ -136,5 +141,7 @@ patch:
       states: [结束, 缓冲]
       reset: 0
   key_binder/bindings/+:
-    - { when: always, accept: Shift+space, toggle: buffered }
+    - { when: always, accept: "Control+j", toggle: buffered }
+    - { when: always, accept: v, toggle: buffered }
+    - { when: composing, accept: v, send: v }
   menu/alternative_select_keys: null

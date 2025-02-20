@@ -6,7 +6,7 @@ __include: snow_pinyin.schema.yaml:/
 schema:
   schema_id: snow_sanpin
   name: 冰雪三拼
-  version: "0.1"
+  version: "0.2.0"
   author:
     - 谭淞宸 <i@tansongchen.com>
   description: |
@@ -22,7 +22,6 @@ engine:
     - recognizer
     - lua_processor@*snow.shape_processor
     - key_binder
-    - lua_processor@*snow.abbreviation
     - lua_processor@*snow.select_character
     - lua_processor@*snow.popping
     - speller
@@ -40,10 +39,9 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - lua_translator@*snow.table_like*t0
     - lua_translator@*snow.table_like*t12
     - lua_translator@*snow.table_like*t3
-    - lua_translator@*snow.table_like*t4
+    - lua_translator@*snow.table_like*jianpin
     - table_translator@stroke
     - script_translator@pinyin
     - lua_translator@*snow.datetime
@@ -58,6 +56,7 @@ engine:
     - uniquifier
     - lua_filter@*snow.shape_filter
     - simplifier
+    - lua_filter@*snow.hint
 
 sanpin_algebra:
   # 全拼还原
@@ -109,7 +108,7 @@ speller:
     - match: "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]"
       accept: "[viuoa]"
     - match_shape: ".+"
-      accept: "[aeiou]"
+      accept: "[viuoa]"
   popping:
     # 单字三码顶
     - when: popping
@@ -148,7 +147,15 @@ translator:
   t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?[viuoa;]?"
   t2_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z][bpmfdtnlgkhjqxzcsrywe]([a-z][viuoa]{0,2})?"
   t3_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3}([a-z][viuoa]{0,2})?"
-  t4_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4,}[viuoa]{0,2}"
+  jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4,}[viuoa]{0,2}"
+
+jianpin:
+  dictionary: snow_pinyin
+  prism: snow_jiandao_jianpin
+  packs:
+    - snow_pinyin.base
+    - snow_pinyin.ext
+    - snow_pinyin.tencent
 
 lookup_sanpin:
   tags: [pinyin]
@@ -166,4 +173,11 @@ patch:
     - name: popping
       states: [整句, 顶功]
       reset: 1
-  menu/alternative_select_keys: "_23890"
+    - name: buffered
+      states: [结束, 缓冲]
+      reset: 0
+  key_binder/bindings/+:
+    - { when: always, accept: "Control+j", toggle: buffered }
+    - { when: always, accept: v, toggle: buffered }
+    - { when: composing, accept: v, send: v }
+  menu/alternative_select_keys: null

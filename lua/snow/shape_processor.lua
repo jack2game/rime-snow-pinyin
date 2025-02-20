@@ -70,7 +70,11 @@ function processor.func(key, env)
   local shape_input = context:get_property("shape_input")
   local keyName = key:repr()
   if keyName == "BackSpace" and shape_input ~= "" then
-    shape_input = shape_input:sub(1, -2)
+    if env.engine.schema.schema_id == "snow_yipin" then
+      shape_input = ""
+    else
+      shape_input = shape_input:sub(1, -2)
+    end
     goto update
   else
     for _, rule in ipairs(env.config) do

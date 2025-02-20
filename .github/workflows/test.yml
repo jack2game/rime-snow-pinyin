@@ -1,0 +1,27 @@
+on: [push]
+
+name: Test
+
+jobs:
+  test:
+    name: 测试
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - name: 冰雪四拼
+            schema: snow_sipin
+          # - name: 冰雪三拼
+          #   schema: snow_sanpin
+          # - name: 冰雪一拼
+          #   schema: snow_yipin
+          # - name: 冰雪键道
+          #   schema: snow_jiandao
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 Mira
+        run: |
+          wget https://github.com/rimeinn/mira/releases/download/latest/mira
+          chmod +x mira
+      - name: ${{ matrix.name }}
+        run: ./mira -C cache spec/${{ matrix.schema }}.test.yaml
