@@ -150,14 +150,6 @@ speller:
       # 字词模式下的简码；整句模式下应注释掉以提升准确度
       - derive/^([a-z]{2}).+$/$1/
 
-translator:
-  dictionary: snow_pinyin
-  prism: snow_sipin
-  packs:
-    - snow_pinyin.base
-    - snow_pinyin.ext
-    - snow_pinyin.tencent
-
 lookup_sipin:
   tags: [pinyin]
   overwrite_comment: true
@@ -177,6 +169,8 @@ patch:
     - name: buffered
       states: [结束, 缓冲]
       reset: 0
+  translator/prism: snow_sipin
+  translator/preedit_format: null
   punctuator/half_shape/+:
     ";": 的
     "|": ；

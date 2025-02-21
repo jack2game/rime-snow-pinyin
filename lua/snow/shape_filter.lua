@@ -45,7 +45,8 @@ local function jiandao_encode(text, current, map)
     result = map[characters[1]] or "??"
   elseif #characters == 3 then
     -- 如果有三个字符，返回第一个字符的编码和第二个字符的编码
-    result = (map[characters[1]] or "?"):sub(1, 1) .. (map[characters[2]] or "?"):sub(1, 1) .. (map[characters[3]] or "?"):sub(1, 1)
+    result = (map[characters[1]] or "?"):sub(1, 1) ..
+    (map[characters[2]] or "?"):sub(1, 1) .. (map[characters[3]] or "?"):sub(1, 1)
   elseif #characters >= 2 then
     -- 如果有两个字符，返回第一个字符的编码和第二个字符的编码
     result = (map[characters[1]] or "?"):sub(1, 1) .. (map[characters[2]] or "?"):sub(1, 1)
@@ -71,10 +72,12 @@ end
 ---@param shape_input string
 ---@param env AssistEnv
 function filter.handle_candidate(text, shape_input, env)
-  local current = snow.current(env.engine.context)
+  local segment = env.engine.context.composition:toSegmentation():back()
+  local is_pinyin = segment and segment:has_tag("pinyin") or false
+  local current = snow.current(env.engine.context) or ""
   local id = env.engine.schema.schema_id
   if id == "snow_sipin" then -- 冰雪四拼
-    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrwyv][aeiou]{3}")) then
+    if shape_input:len() > 0 or rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrwyv][aeiou]{3}") then
       local code = ""
       local partial_code = ""
       ---@type string?
@@ -90,7 +93,9 @@ function filter.handle_candidate(text, shape_input, env)
         partial_code = shape_input
         local element = env.strokes[text] or ""
         code = encode(element, { ["一"] = "e", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
-        prompt = partial_code:len() > 0 and " 笔画 [" .. partial_code:gsub(".", { ["e"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]" or nil
+        prompt = partial_code:len() > 0 and
+        " 笔画 [" .. partial_code:gsub(".", { ["e"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]" or
+        nil
         comment = code
       end
       local match = not code or code:sub(1, #partial_code) == partial_code
@@ -99,7 +104,7 @@ function filter.handle_candidate(text, shape_input, env)
       return true, nil, nil
     end
   elseif id == "snow_sanpin" then -- 冰雪三拼
-    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]")) then
+    if shape_input:len() > 0 or rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]") then
       local code = ""
       local partial_code = ""
       local prompt = ""
@@ -114,7 +119,8 @@ function filter.handle_candidate(text, shape_input, env)
         partial_code = shape_input
         local element = env.strokes[text] or ""
         code = encode(element, { ["一"] = "v", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
-        prompt = " 笔画 [" .. partial_code:gsub(".", { ["v"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]"
+        prompt = " 笔画 [" ..
+        partial_code:gsub(".", { ["v"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]"
         comment = code
       end
       local match = not code or code:sub(1, #partial_code) == partial_code
@@ -123,17 +129,16 @@ function filter.handle_candidate(text, shape_input, env)
       return true, nil, nil
     end
   elseif id == "snow_jiandao" then -- 冰雪键道
-    if shape_input:len() > 0 or (current and rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z]([bpmfdtnlgkhjqxzcsrywe][a-z]?)?")) then
-      local code = jiandao_encode(text, current or "", env.xkjd)
+    if shape_input:len() > 0 or rime_api.regex_match(current, "[bpmfdtnlgkhjqxzcsrywe][a-z]([bpmfdtnlgkhjqxzcsrywe][a-z]?)?") then
+      local code = jiandao_encode(text, current, env.xkjd)
       local prompt = shape_input:len() > 0 and " 形 [" .. shape_input .. "]" or nil
       local match = not code or code:sub(1, #shape_input) == shape_input
       local comment = code
-      if utf8.len(text) == 1 and env.engine.context:get_option("chaifen") then
-        local chaifen = env.xkjd_chaifen[text] or ""
-        comment = code .. " " .. chaifen
-      end
-      if (current or ""):len() == 1 then
+      if current:len() == 1 then
         comment = "" -- 630 不需要提示
+      elseif utf8.len(text) == 1 and (env.engine.context:get_option("chaifen") or is_pinyin) then
+        local chaifen = env.xkjd_chaifen[text] or ""
+        comment = comment .. " " .. chaifen
       end
       return match, prompt, comment
     else
@@ -174,7 +179,7 @@ end
 ---@param segment Segment
 ---@param env Env
 function filter.tags_match(segment, env)
-  return segment:has_tag("abc")
+  return segment:has_tag("abc") or segment:has_tag("pinyin")
 end
 
 return filter

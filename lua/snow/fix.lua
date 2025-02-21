@@ -67,7 +67,10 @@ function this.func(translation, env)
   local segment = context.composition:toSegmentation():back()
   local input = snow.current(context)
   if not segment or not input then
-    return snow.kNoop
+    for candidate in translation:iter() do
+      yield(candidate)
+    end
+    return
   end
   local shape_input = context:get_property("shape_input")
   if shape_input then
@@ -120,6 +123,12 @@ function this.func(translation, env)
       local cand = known_candidates[current]
       cand.type = "fixed"
       yield(cand)
+      i = i + 1
+    elseif current and utf8.len(current) > utf8.len(text) then
+      -- 如果当前固顶候选比当前候选长，那么就不可能找到这个固顶候选，因此跳过
+      local simple_candidate = Candidate("fixed", segment.start, segment._end, current, "")
+      simple_candidate.preedit = snow.current(context) or ""
+      yield(simple_candidate)
       i = i + 1
     end
     ::continue::

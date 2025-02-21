@@ -66,4 +66,10 @@ function filter.func(translation, env)
   end
 end
 
+---@param segment Segment
+---@param env Env
+function filter.tags_match(segment, env)
+  return segment:has_tag("abc")
+end
+
 return filter

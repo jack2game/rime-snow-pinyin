@@ -26,6 +26,15 @@ function this.tags_match(segment, env)
   return context:get_option("popping")
 end
 
+---@param env SnowPostponeEnv
+function format_known_candidates(env)
+  local result = ""
+  for k, v in pairs(env.known_candidates) do
+    result = result .. k .. ":" .. v .. ","
+  end
+  return result
+end
+
 ---@param translation Translation
 ---@param env SnowPostponeEnv
 function this.func(translation, env)

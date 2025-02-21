@@ -1,8 +1,8 @@
 schema_list:
   - schema: snow_sipin
   - schema: snow_sanpin
-  - schema: snow_jiandao
   - schema: snow_yipin
+  - schema: snow_jiandao
 
 ascii_composer:
   good_old_caps_lock: true

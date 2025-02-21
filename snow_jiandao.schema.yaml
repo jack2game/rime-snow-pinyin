@@ -52,9 +52,9 @@ engine:
     - reverse_lookup_filter@lookup_pinyin
     - reverse_lookup_filter@lookup_sanpin
     - lua_filter@*snow.fix
+    - lua_filter@*snow.shape_filter
     - lua_filter@*snow.postpone
     - uniquifier
-    - lua_filter@*snow.shape_filter
     - simplifier
     - lua_filter@*snow.hint
 
@@ -103,7 +103,6 @@ translator:
     - snow_pinyin.base
     - snow_pinyin.ext
     - snow_pinyin.tencent
-  disable_postpone_pattern: '^[bpmfdtnlgkhjqxzcsrywe][a-z][bpmfdtnlgkhjqxzcsrywe]$'
   t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?"
   t2_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4}"
   jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3,}"
@@ -136,7 +135,7 @@ patch:
       reset: 1
     - name: chaifen
       states: [默认, 拆分]
-      reset: 1
+      reset: 0
     - name: buffered
       states: [结束, 缓冲]
       reset: 0
