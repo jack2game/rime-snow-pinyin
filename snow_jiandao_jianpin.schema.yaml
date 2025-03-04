@@ -45,7 +45,8 @@ speller:
   algebra:
     __include: snow_sanpin.schema.yaml:/sanpin_algebra
     __append:
-      - xform/^([a-z]).+$/$1/ # 简拼
+      - derive/.([viuoa])$/?$1/ # 无韵母
+      - xform/^([a-z])[^?]+$/$1/ # 简拼
 
 translator:
   dictionary: snow_pinyin

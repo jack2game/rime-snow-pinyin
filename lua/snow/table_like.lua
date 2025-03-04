@@ -50,33 +50,6 @@ function t12.func(input, segment, env)
   end
 end
 
-local t3 = {}
-
----@param env ProxyTranslatorEnv
-function t3.init(env)
-  env.translator = Component.Translator(env.engine, "translator", "script_translator")
-  env.pattern = env.engine.schema.config:get_string("translator/t3_pattern") or "^.+$"
-end
-
----@param input string
----@param segment Segment
----@param env ProxyTranslatorEnv
-function t3.func(input, segment, env)
-  -- 三字词
-  if rime_api.regex_match(input, env.pattern) then
-    local proxy = ("%s %s %s"):format(input:sub(1, 1), input:sub(2, 2), input:sub(3))
-    if input:len() == 6 then
-      proxy = ("%s?%s %s %s"):format(input:sub(1, 1), input:sub(-1, -1), input:sub(2, 2), input:sub(3, -2))
-    end
-    local translation = env.translator:query(proxy, segment)
-    for candidate in translation:iter() do
-      if utf8.len(candidate.text) == 3 and candidate.type ~= "sentence" then
-        yield(snow.prepare(candidate, proxy, false))
-      end
-    end
-  end
-end
-
 local jianpin = {}
 
 ---@param env ProxyTranslatorEnv
@@ -102,6 +75,15 @@ function jianpin.func(input, segment, env)
         proxy:sub(2),
         buma:sub(1, 1)
       )
+    elseif buma:len() == 3 then
+      proxy = ("%s?%s%s?%s%s?%s"):format(
+        proxy:sub(1, 1),
+        buma:sub(2, 2),
+        proxy:sub(2, 2),
+        buma:sub(3, 3),
+        proxy:sub(3),
+        buma:sub(1, 1)
+      )
     end
     local translation = env.translator:query(proxy, segment)
     for candidate in translation:iter() do
@@ -114,6 +96,5 @@ end
 
 return {
   t12 = t12,
-  t3 = t3,
   jianpin = jianpin,
 }

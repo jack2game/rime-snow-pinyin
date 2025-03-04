@@ -40,7 +40,6 @@ engine:
   translators:
     - punct_translator
     - lua_translator@*snow.table_like*t12
-    - lua_translator@*snow.table_like*t3
     - lua_translator@*snow.table_like*jianpin
     - table_translator@stroke
     - script_translator@pinyin
@@ -52,9 +51,9 @@ engine:
     - reverse_lookup_filter@lookup_pinyin
     - reverse_lookup_filter@lookup_sanpin
     - lua_filter@*snow.fix
+    - lua_filter@*snow.shape_filter
     - lua_filter@*snow.postpone
     - uniquifier
-    - lua_filter@*snow.shape_filter
     - simplifier
     - lua_filter@*snow.hint
 
@@ -110,13 +109,17 @@ speller:
     - match_shape: ".+"
       accept: "[viuoa]"
   popping:
-    # 单字三码顶
+    # 630
     - when: popping
-      match: "[bpmfdtnlgkhjqxzcsrywe][a-z][viuoa]+"
+      match: "[bpmfdtnlgkhjqxzcsrywe][viuoa]+"
+      accept: "[bpmfdtnlgkhjqxzcsrywe]"
+    # 单字和三字词
+    - when: popping
+      match: "[bpmfdtnlgkhjqxzcsrywe]{2,3}[viuoa]+"
       accept: "[bpmfdtnlgkhjqxzcsrywe]"
     # 四字词和多字词
     - when: popping
-      match: "[bpmfdtnlgkhjqxzcsrywe][a-z]{3,}"
+      match: "[bpmfdtnlgkhjqxzcsrywe]{4,}[viuoa]*"
       accept: "[bpmfdtnlgkhjqxzcsrywe]"
     # 大写参与编码
     - when: popping
@@ -134,7 +137,6 @@ speller:
     __append:
       - abbrev/^([a-z]).+$/$1/ # 简拼
       - derive/[viuoa]$// # 无声调
-      - derive/.([viuoa])$/?$1/ # 无韵母
 
 translator:
   dictionary: snow_pinyin
@@ -143,11 +145,9 @@ translator:
     - snow_pinyin.base
     - snow_pinyin.ext
     - snow_pinyin.tencent
-  disable_postpone_pattern: '^[bpmfdtnlgkhjqxzcsrywe][a-z][bpmfdtnlgkhjqxzcsrywe]$'
-  t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?[viuoa;]?"
-  t2_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z][bpmfdtnlgkhjqxzcsrywe]([a-z][viuoa]{0,2})?"
-  t3_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3}([a-z][viuoa]{0,2})?"
-  jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4,}[viuoa]{0,2}"
+  t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?[viuoa]?"
+  t2_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4}[viuoa]{0,2}"
+  jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3,}[viuoa]{0,3}"
 
 jianpin:
   dictionary: snow_pinyin

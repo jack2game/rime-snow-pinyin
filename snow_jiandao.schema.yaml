@@ -71,7 +71,7 @@ speller:
     - when: popping
       match: "[bpmfdtnlgkhjqxzcsrywe][viuoa]+"
       accept: "[bpmfdtnlgkhjqxzcsrywe]"
-    # 单字三码顶
+    # 单字和三字词
     - when: popping
       match: "[bpmfdtnlgkhjqxzcsrywe]{2,3}[viuoa]+"
       accept: "[bpmfdtnlgkhjqxzcsrywe]"
