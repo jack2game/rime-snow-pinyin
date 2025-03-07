@@ -212,12 +212,15 @@ speller:
     - xform/^ngyi?/ngi/
     - xform/^ngwu?/ngu/
     # 转换成标准的声介-韵调形式
-    - xform/iu/iou/
+    - xform/(?<=[jqx])u/v/
     - xform/ui/uei/
+    - xform/iu/iou/
+    - xform/in/ien/
     - xform/un/uen/
+    - xform/vn/uen/
+    - xform/ing/ieng/
     - xform/iong/veng/
     - xform/ong/ueng/
-    - xform/(?<=[jqx])u/v/
     # 删除隐含的韵母
     - xform/(?<=[bpmf])u//
     - xform/er//
@@ -233,12 +236,7 @@ speller:
     - xlit/1234/flxh/
 
 translator:
-  dictionary: snow_pinyin
   prism: snow_yipin
-  packs:
-    - snow_pinyin.base
-    - snow_pinyin.ext
-    - snow_pinyin.tencent
   preedit_format:
     # 还原声调
     - xform/(?<! )f( |$)/1$1/
@@ -256,8 +254,14 @@ translator:
     - xform/ngu/w/
     - xform/ngv/yu/
     - xform/(^| )ng/$1'/
+    - xform/ieng/ing/
     - xform/ueng/ong/
     - xform/veng/iong/
+    - xform/ien/in/
+    - xform/uen/un/
+    - xform/ven/vn/
+    - xform/iou/iu/
+    - xform/uei/ui/
     - xform/(?<=[bpmf])e(?=\d)/o/
     - xform/ue(?=\d)/uo/
     - xform/([jqx])v/$1u/

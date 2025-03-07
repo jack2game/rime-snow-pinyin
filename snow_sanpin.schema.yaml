@@ -138,25 +138,6 @@ speller:
       - abbrev/^([a-z]).+$/$1/ # 简拼
       - derive/[viuoa]$// # 无声调
 
-translator:
-  dictionary: snow_pinyin
-  prism: snow_sanpin
-  packs:
-    - snow_pinyin.base
-    - snow_pinyin.ext
-    - snow_pinyin.tencent
-  t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?[viuoa]?"
-  t2_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4}[viuoa]{0,2}"
-  jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3,}[viuoa]{0,3}"
-
-jianpin:
-  dictionary: snow_pinyin
-  prism: snow_jiandao_jianpin
-  packs:
-    - snow_pinyin.base
-    - snow_pinyin.ext
-    - snow_pinyin.tencent
-
 lookup_sanpin:
   tags: [pinyin]
   overwrite_comment: true
@@ -176,6 +157,11 @@ patch:
     - name: buffered
       states: [结束, 缓冲]
       reset: 0
+  translator/prism: snow_sanpin
+  translator/preedit_format: null
+  translator/t1_pattern: "[bpmfdtnlgkhjqxzcsrywe][a-z]?[viuoa]?"
+  translator/t2_pattern: "[bpmfdtnlgkhjqxzcsrywe]{4}[viuoa]{0,2}"
+  translator/jianpin_pattern: "[bpmfdtnlgkhjqxzcsrywe]{3,}[viuoa]{0,3}"
   key_binder/bindings/+:
     - { when: always, accept: "Control+j", toggle: buffered }
     - { when: always, accept: v, toggle: buffered }

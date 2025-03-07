@@ -48,10 +48,9 @@ speller:
       - derive/.([viuoa])$/?$1/ # 无韵母
       - xform/^([a-z])[^?]+$/$1/ # 简拼
 
-translator:
-  dictionary: snow_pinyin
-  prism: snow_jiandao_jianpin
-  packs:
-    - snow_pinyin.base
-    - snow_pinyin.ext
-    - snow_pinyin.tencent
+__patch:
+  - patch
+  - snow_sipin.custom:/patch?
+
+patch:
+  translator/prism: snow_jiandao_jianpin

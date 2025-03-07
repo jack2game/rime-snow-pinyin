@@ -74,15 +74,16 @@ function this.func(translation, env)
   local count = 0
   local proper_length = 0
   for candidate in translation:iter() do
+    local segment_length = candidate._end - candidate._start
     if proper_length == 0 then
-      proper_length = utf8.len(candidate.text) or 0
+      proper_length = segment_length
     end
     local text = candidate.text
     -- 如果当前候选词的长度已经小于首选了，那么把之前后置过的候选词重新输出
     -- 例如，输入码为两个音节的时候，先输出正常的二字词，然后再输出之前后置的二字词，最后才是单字
     -- 这样可以保证字数较长的词一定排在前面
     -- 做完这件事情之后，剩下的候选词可以直接输出，不用考虑后置
-    if utf8.len(text) < proper_length or count >= 10 then
+    if segment_length < proper_length or count >= 10 then
       table.sort(postponed_candidates, function(a, b)
         return env.known_candidates[a.text] > env.known_candidates[b.text]
       end)

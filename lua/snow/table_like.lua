@@ -88,7 +88,7 @@ function jianpin.func(input, segment, env)
     local translation = env.translator:query(proxy, segment)
     for candidate in translation:iter() do
       if utf8.len(candidate.text) >= input:gsub("[viuoa]", ""):len() and candidate.type ~= "sentence" then
-        yield(candidate)
+        yield(snow.prepare(candidate, proxy, true))
       end
     end
   end

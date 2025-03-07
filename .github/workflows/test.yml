@@ -13,8 +13,8 @@ jobs:
             schema: snow_sipin
           - name: 冰雪三拼
             schema: snow_sanpin
-          # - name: 冰雪一拼
-          #   schema: snow_yipin
+          - name: 冰雪一拼
+            schema: snow_yipin
           - name: 冰雪键道
             schema: snow_jiandao
     steps:

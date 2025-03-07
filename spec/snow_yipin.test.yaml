@@ -1,0 +1,29 @@
+schema: snow_yipin
+source_dir: ..
+script: |
+  function has(something)
+    for _, v in ipairs(cand) do
+      if v.text == something then
+        return true
+      end
+    end
+    return false
+  end
+deploy:
+  sentence:
+    options:
+      popping: false
+    tests:
+      - send: sgi{Release+s}{Release+g}{Release+i}drm{Release+d}{Release+r}{Release+m}
+        assert: cand[1].text == "冰雪"
+  popping:
+    tests:
+      # 固顶词
+      - send: f{Release+f}
+        assert: commit == "的"
+      # 顶功
+      - send: sgi{Release+s}{Release+g}{Release+i}drm{Release+d}{Release+r}{Release+m}
+        assert: commit == "冰" and cand[1].text == "雪"
+      # 辅助码
+      - send: dj{Release+d}{Release+j}f {Release+f}{Release+space}
+        assert: cand[1].text == "奕"
