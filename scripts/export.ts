@@ -2,10 +2,10 @@
 // 生成的码表可以用于评测和大竹查询
 
 import { readFileSync, writeFileSync } from "fs";
-import { load } from "js-yaml";
 import { sortBy } from "lodash-es";
+import { SpellingAlgebra } from "./utils";
 
-function getFixedCode(file: string) {
+function 获取固顶词(file: string) {
   const fixed = readFileSync(file, "utf8").trim().split("\n");
   const fixedMap = new Map<string, string>();
   for (const line of fixed) {
@@ -16,7 +16,7 @@ function getFixedCode(file: string) {
   return fixedMap;
 }
 
-function getWordsInfo() {
+function 获取拼音词典() {
   const singleRaw = readFileSync("snow_pinyin.dict.yaml", "utf8")
     .trim()
     .split("\n");
@@ -59,52 +59,11 @@ function getWordsInfo() {
   return all;
 }
 
-interface Replace {
-  from: RegExp;
-  to: string;
-}
-
-function getSpellingAlgebra() {
-  const content = readFileSync("snow_sipin.schema.yaml", "utf8");
-  const yaml = load(content) as Record<string, any>;
-  const rules: string[] = yaml["sipin_algebra"];
-  const parsed: Replace[] = [];
-  rules.forEach((rule) => {
-    const trimmed = rule.trim();
-    const ruleParts = trimmed.split(trimmed.at(-1)!);
-    if (ruleParts[0] === "xform" || ruleParts[0] === "derive") {
-      parsed.push({
-        from: new RegExp(ruleParts[1], "g"),
-        to: ruleParts[2],
-      });
-    } else if (ruleParts[0] === "xlit") {
-      const fromList = [...ruleParts[1]];
-      const toList = [...ruleParts[2]];
-      fromList.forEach((from, i) => {
-        parsed.push({
-          from: new RegExp(from, "g"),
-          to: toList[i],
-        });
-      });
-    }
-  });
-  parsed.push({ from: /^([a-z]{3})$/g, to: "$1o" });
-  return parsed;
-}
-
-function spellingAlgebra(code: string, rules: Replace[]) {
-  let final = code;
-  for (const rule of rules) {
-    final = final.replaceAll(rule.from, rule.to);
-  }
-  return final;
-}
-
 /**
  * 得到全码
  */
-function assemble(syllables: string[], rules: Replace[]) {
-  const transformed = syllables.map((x) => spellingAlgebra(x, rules));
+function assemble(syllables: string[], algebra: SpellingAlgebra) {
+  const transformed = syllables.map(algebra.apply);
   if (transformed.length === 1) return transformed[0];
   let base = transformed
     .map((x, i) => (useCapital && i >= 4 ? x[0].toUpperCase() : x[0]))
@@ -115,10 +74,10 @@ function assemble(syllables: string[], rules: Replace[]) {
 }
 
 function simulate() {
-  const fixedMenu = getFixedCode("snow_sipin.fixed.txt");
+  const fixedMenu = 获取固顶词("snow_sipin.fixed.txt");
   const mainMenu = new Map<string, string>();
-  const codes = getWordsInfo();
-  const rules = getSpellingAlgebra();
+  const codes = 获取拼音词典();
+  const rules = new SpellingAlgebra("snow_sipin.schema.yaml", "sipin_algebra");
   const finalize = (s: string) =>
     /^[bpmfdtnlgkhjqxzcsrwyv]{1,3}$/.test(s) ? s + "_" : s;
   const encoded: { word: string; code: string; importance: number }[] = [];

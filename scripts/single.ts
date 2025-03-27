@@ -1,13 +1,41 @@
-import { convert } from "pinyin-pro";
 import { readFileSync, writeFileSync } from "fs";
+import { 获取大字集拼音 } from "./utils";
+import matter from "gray-matter";
 
-const tygfPinyin = readFileSync("snow/tygf.txt", "utf-8").trim().split("\n");
-const extendedPinyin = readFileSync("pinyin-data/pinyin.txt", "utf-8")
+const 通用规范拼音 = readFileSync("scripts/tygf.txt", "utf-8")
   .trim()
   .split("\n");
-const extended: [string, string, number][] = [];
+const 大字集拼音 = 获取大字集拼音();
 
-const numbers = [
+const 已知拼音 = new Map<string, string[]>();
+
+const 文件内容 = [
+  "# 《通用规范汉字表》内读音依据《通用规范汉字字典》，收录了 8105 个汉字，共 8773 音",
+  "# 其他汉字的读音依据 https://github.com/mozillazg/pinyin-data/blob/master/pinyin.txt",
+];
+
+文件内容.push(
+  matter.stringify("", {
+    name: "snow_pinyin",
+    version: "0.1",
+    sort: "by_weight",
+    use_preset_vocabulary: false,
+  })
+);
+文件内容.push("# 字母");
+文件内容.push(
+  "# 用 ~ 和 ~~ 作为特殊音节的标记，具体如何输入可以由方案自行决定，不影响简拼"
+);
+for (const letter of "abcdefghijklmnopqrstuvwxyz") {
+  文件内容.push(`${letter}\t~${letter}`);
+}
+文件内容.push("");
+for (const letter of "abcdefghijklmnopqrstuvwxyz") {
+  文件内容.push(`${letter.toUpperCase()}\t~~${letter}`);
+}
+文件内容.push("");
+文件内容.push("# 数字");
+for (const [index, number] of [
   "ling2",
   "yi1",
   "er4",
@@ -19,78 +47,32 @@ const numbers = [
   "ba1",
   "jiu3",
   "shi2",
-];
-
-const specialFix = {
-  m̄: "m1",
-  hm: "hm5",
-  ê̄: "ê1",
-  ế: "ê2",
-  ê̌: "ê3",
-  ề: "ê4",
-};
-
-for (const line of extendedPinyin) {
-  if (line.startsWith("#")) continue;
-  const [code_str, pinyins] = line.split("#")[0]!.split(":");
-  const code = parseInt(code_str.trim().slice(2), 16);
-  const pinyin_list = pinyins.trim().split(",");
-  const char = String.fromCodePoint(code);
-  const weight = 0x4e00 <= code && code <= 0x9fff ? 1 : 0;
-  for (const pinyin of pinyin_list) {
-    if (pinyin in specialFix) {
-      extended.push([char, specialFix[pinyin], weight]);
-      continue;
-    }
-    const normalized = convert(pinyin, { format: "symbolToNum" })
-      .replace("ü", "v")
-      .replace("0", "5");
-    extended.push([char, normalized, weight]);
-  }
+].entries()) {
+  文件内容.push(`${index}\t${number}`);
 }
-
-const knownPinyin = new Map<string, string[]>();
-let extraCount = 0;
-
-const content = readFileSync("snow/dict.yaml", "utf-8").split("\n");
-content.push("# 字母");
-content.push(
-  "# 用 ~ 和 ~~ 作为特殊音节的标记，具体如何输入可以由方案自行决定，不影响简拼"
-);
-for (const letter of "abcdefghijklmnopqrstuvwxyz") {
-  content.push(`${letter}\t~${letter}`);
-}
-content.push("");
-for (const letter of "abcdefghijklmnopqrstuvwxyz") {
-  content.push(`${letter.toUpperCase()}\t~~${letter}`);
-}
-content.push("");
-content.push("# 数字");
-for (const [index, number] of numbers.entries()) {
-  content.push(`${index}\t${number}`);
-}
-content.push("");
-content.push("#《通用规范汉字字典》");
-for (const line of tygfPinyin) {
+文件内容.push("");
+文件内容.push("#《通用规范汉字字典》");
+for (const line of 通用规范拼音) {
   let [char, pinyin, frequency] = line.split("\t");
   if (parseInt(frequency) < 2) {
     frequency = "2";
   }
-  content.push(`${char}\t${pinyin}\t${frequency}`);
-  knownPinyin.set(char, (knownPinyin.get(char) || []).concat(pinyin));
+  文件内容.push(`${char}\t${pinyin}\t${frequency}`);
+  已知拼音.set(char, (已知拼音.get(char) || []).concat(pinyin));
 }
-content.push("");
-content.push("# 大字集");
-extended.forEach(([char, normalized, weight]) => {
-  if (knownPinyin.has(char)) {
-    if (knownPinyin.get(char)!.includes(normalized)) {
-      return;
-    }
-    extraCount++;
-    console.log(`Extra: ${char} ${normalized}`);
+文件内容.push("");
+文件内容.push("# 大字集");
+let 增补拼音总数 = 0;
+for (const { 汉字, 拼音 } of 大字集拼音) {
+  if (已知拼音.has(汉字)) {
+    if (已知拼音.get(汉字)!.includes(拼音)) continue;
+    增补拼音总数++;
+    console.log(`增补拼音: ${汉字} ${拼音}`);
   }
-  content.push(`${char}\t${normalized}\t${weight}`);
-});
-writeFileSync("snow_pinyin.dict.yaml", content.join("\n"));
+  let 编码 = 汉字.codePointAt(0) ?? 0;
+  let 权重 = 0x4e00 <= 编码 && 编码 <= 0x9fff ? 1 : 0;
+  文件内容.push(`${汉字}\t${拼音}\t${权重}`);
+}
+writeFileSync("snow_pinyin.dict.yaml", 文件内容.join("\n"));
 
-console.log(`Extra: ${extraCount}`);
+console.log(`增补拼音总数: ${增补拼音总数}`);
