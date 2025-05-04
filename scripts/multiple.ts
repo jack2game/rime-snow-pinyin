@@ -663,6 +663,16 @@ function readIceDictionary(name: string) {
   return data;
 }
 
+export function getPinyin(word: string) {
+  return pinyin(word, {
+    toneType: "num",
+    v: true,
+    nonZh: "removed",
+    type: "array",
+    toneSandhi: false,
+  }).map((x) => x.replaceAll("0", "5"));
+}
+
 function process(name: string, dict: Map<string, string[]>) {
   const input = readIceDictionary(name);
   const known_words = new Set();
@@ -673,13 +683,7 @@ function process(name: string, dict: Map<string, string[]>) {
     const normal_word = word.replace(/[·（）：–]/g, "");
     if (![...normal_word].every((c) => dict.has(c))) continue;
     const simp_list = simp_pinyin.split(" ");
-    const ref_list = pinyin(word, {
-      toneType: "num",
-      v: true,
-      nonZh: "removed",
-      type: "array",
-      toneSandhi: false,
-    }).map((x) => x.replaceAll("0", "5"));
+    const ref_list = getPinyin(normal_word);
     const [valid, updated] = resolve(normal_word, simp_list, ref_list, dict);
     if (valid) {
       const hash = word + updated;
@@ -716,9 +720,10 @@ function main() {
   applyDiff(dict);
   const completeDict = processCompleteDict();
   addDict(completeDict);
-  process("base", dict);
-  process("ext", dict);
-  process("tencent", dict);
+  console.log("初始化完成");
+  // process("base", dict);
+  // process("ext", dict);
+  // process("tencent", dict);
 }
 
 main();
