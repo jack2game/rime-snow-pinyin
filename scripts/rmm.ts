@@ -23,8 +23,10 @@ function 最大逆向匹配分词(词典: Map<string, number>, 文本: string) {
   return 词列表;
 }
 
+const base = process.argv[2];
+
 const 基础多字词库 = new Set<string>(
-  readFileSync("../DictLinglong/并集.txt", "utf-8").trim().split("\n")
+  readFileSync("../DictLinglong/DictLinglong.txt", "utf-8").trim().split("\n")
 );
 const 通用规范汉字 = new Set<string>(
   readFileSync("scripts/tygf.txt", "utf-8")
@@ -33,7 +35,7 @@ const 通用规范汉字 = new Set<string>(
     .map((line) => line.split("\t")[0]!)
 );
 const 原始一字词频 = new Map<string, number>(
-  readFileSync("万象一字词频（推导）.txt", "utf-8")
+  readFileSync(base + "万象一字词频（推导）.txt", "utf-8")
     .trim()
     .split("\n")
     .map((line) => {
@@ -46,8 +48,8 @@ const 词频 = new Map<string, number>();
 基础多字词库.forEach((word) => 词频.set(word, 0));
 
 const 多字词频 = (
-  readFileSync("万象多字词频.txt", "utf-8") +
-  readFileSync("万象多字词频 2.txt", "utf-8").trim()
+  readFileSync(base + "万象多字词频.txt", "utf-8") +
+  readFileSync(base + "万象多字词频 2.txt", "utf-8").trim()
 )
   .split("\n")
   .map((line) => {
@@ -67,7 +69,7 @@ for (const [word, frequency] of 多字词频) {
 词频.set("的", 词频.get("的")! / 3);
 
 writeFileSync(
-  "万象词频大玲珑二次分词.txt",
+  "万象词频玲珑二次分词.txt",
   [...词频.entries()]
     .sort(([_, av], [__, bv]) => bv - av)
     .map(([key, value]) => {

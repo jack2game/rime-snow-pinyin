@@ -84,10 +84,10 @@ chord_composer:
     - xform/^hk$/{Page_Up}/
     - xform/^hl$/{Page_Down}/
     # 左手声介
-    - xform/ zv /ng/
-    - xform/ d /ngi/
-    - xform/ e /ngu/
-    - xform/ sd /ngv/
+    - xform/ zv /rj/
+    - xform/ d /rji/
+    - xform/ e /rju/
+    - xform/ sd /rjv/
     - xform/ w /b/
     - xform/ sg /bi/
     - xform/ eg /p/
@@ -115,18 +115,18 @@ chord_composer:
     - xform/ cg /ku/
     - xform/ z /h/
     - xform/ er /hu/
-    - xform/ a /ji/
-    - xform/ sr /jv/
-    - xform/ df /qi/
-    - xform/ sv /qv/
-    - xform/ r /xi/
-    - xform/ dr /xv/
-    - xform/ g /zh/
-    - xform/ we /zhu/
-    - xform/ qr /ch/
-    - xform/ dv /chu/
-    - xform/ s /sh/
-    - xform/ ag /shu/
+    - xform/ a /gi/
+    - xform/ sr /gv/
+    - xform/ df /ki/
+    - xform/ sv /kv/
+    - xform/ r /hi/
+    - xform/ dr /hv/
+    - xform/ g /zj/
+    - xform/ we /zju/
+    - xform/ qr /cj/
+    - xform/ dv /cju/
+    - xform/ s /sj/
+    - xform/ ag /sju/
     - xform/ wr /r/
     - xform/ qg /ru/
     - xform/ q /z/
@@ -156,7 +156,7 @@ chord_composer:
     - xform/ ji /ang2/
     - xform/ jo /ang3/
     - xform/ uo /ang4/
-    - xform/ j. /ao1/
+    - xform/ j\. /ao1/
     - xform/ u; /ao2/
     - xform| m/ |ao3|
     - xform/ kl /ao4/
@@ -180,7 +180,19 @@ chord_composer:
     - xform/ ml /ou2/
     - xform/ up /ou3/
     - xform/ m\. /ou4/
-    - xlit/1234/flxh/
+    - xlit/1234/wyxq/
+  output_format:
+    - erase/^.* .+ .*$/
+    - xform/^(rj)(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
+    - xform/^([bpm])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou)?([wyxq])$/[$1$2$3]/
+    - xform/^(f)(a|an|ang|e|ei|en|eng|ou)?([wyxq])$/[$1$2$3]/
+    - xform/^([dtnl])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^([nl])(v|ve)([wyxq])$/[$1$2$3]/
+    - xform/^([gkh])(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng|i|ia|ian|iang|iao|ie|ien|ieng|iou|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
+    - xform/^([zcsr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(v.+v)$/[$1]/
+    - erase/^[a-z]+$/
+    - xform/^\[(.+)\]/$1/
   prompt_format:
     # 加方括弧
     - 'xform/^(.*)$/[$1]/'
@@ -195,76 +207,73 @@ speller:
   initials: "bpmfdtnlgkhjqxzcsryw"
   shape:
     # v 表示辅助码结束
-    - match: "[bpmfdtnlgkhjqxzcsr][gh]?[iuv]?(a|ai|an|ang|ao|e|ei|en|eng|ou)?[flxh]"
+    - match: "[bpmfdtnlgkhjqxzcsr]j?[iuv]?(a|ai|an|ang|ao|e|ei|en|eng|ou)?[wyxq]"
       accept: "v"
     - match_shape: "v[^v]*"
       accept: "[a-z]"
   algebra:
+    # 合并轻声
     - xform/5/1/
     # 合并边缘音节
     - xform/^(h?)ng(?=\d)/$1eng/
     - xform/^n(?=\d)/en/
     - xform/^m(?=\d)/mu/
     - xform/^hm(?=\d)/hen/
-    # 用 ng 表示零声母
-    - xform/^(?=[aoeyw])/ng/
-    - xform/^ngyu/ngv/
-    - xform/^ngyi?/ngi/
-    - xform/^ngwu?/ngu/
-    # 转换成标准的声介-韵调形式
-    - xform/(?<=[jqx])u/v/
+    # 韵调变换
+    - xform/(?<=[jqxy])u/$1v/
     - xform/ui/uei/
     - xform/iu/iou/
-    - xform/in/ien/
-    - xform/un/uen/
-    - xform/vn/uen/
+    - xform/(?<=[iuv])n/en/
     - xform/ing/ieng/
-    - xform/iong/veng/
-    - xform/ong/ueng/
-    # 删除隐含的韵母
-    - xform/(?<=[bpmf])u//
+    - xform/(?<![iy])ong/ueng/
+    - xform/(iong|(?<=y)ong)/veng/
+    - xform/(?<=[bpmfuw])o(?=\d)/e/
+    # 声介变换
+    - xlit/jqx/gkh/
+    - xform/^(?=[aoeyw])/rj/
+    - xform/^rjyv/rjv/
+    - xform/^rjyi?/rji/
+    - xform/^rjwu?/rju/
+    - xform/^([zcs])h/$1j/
+    # 隐含的韵母
     - xform/er//
-    - xform/(?<=[zcsrh])i//
-    - xform/(?<=[bpmf])o/e/
-    - xform/uo/ue/
+    - xform/(?<=[bpmf])u//
+    - xform/^([zcs]j?|r)i/$1/
+    # 字母标调
+    - xlit/1234/wyxq/
     # 支持声介简拼
-    - abbrev/^([bpmfdtnlgkhjqxzcsr]|zh|ch|sh|ng)([aoe].+\d|\d)$/$1/
-    - abbrev/^([bpmdtnljqx]|ng)i.+$/$1i/
-    - abbrev/^([dtnlgkhzcsr]|zh|ch|sh|ng)u.+$/$1u/
-    - abbrev/^([nljqx]|ng)v.+$/$1v/
-    # 用字母标调
-    - xlit/1234/flxh/
+    - abbrev/^([bpmfdtnlgkhzcsr]j?[oiuv]).+$/$1/
 
 translator:
   prism: snow_yipin
   preedit_format:
-    # 还原声调
-    - xform/(?<! )f( |$)/1$1/
-    - xform/(?<! )l( |$)/2$1/
-    - xform/(?<! )x( |$)/3$1/
-    - xform/(?<! )h( |$)/4$1/
-    # 补足隐含的韵母
+    # 字母标调
+    - xlit/wyxq/1234/
+    # 隐含的韵母
+    - xform/([zcs]j?|r)(?=\d)/$1i/
     - xform/(?<=[bpmf])(?=\d)/u/
-    - xform/(?<=[zcsrh])(?=\d)/i/
-    - xform/^ng(?=\d)/nger/
-    # 全拼的正字法
-    - xform/ngi(n\d|ng\d|\d)/yi$1/
-    - xform/ngi/y/
-    - xform/ngu(?=\d)/wu/
-    - xform/ngu/w/
-    - xform/ngv/yu/
-    - xform/(^| )ng/$1'/
-    - xform/ieng/ing/
-    - xform/ueng/ong/
+    - xform/rj(?=\d)/rjer/
+    # 声介变换
+    - xform/([zcs])j/$1h/
+    - xform/rji(\d|en\d|eng\d)/rjyi$1/
+    - xform/rji/rjy/
+    - xform/rju(\d)/rjwu$1/
+    - xform/rju/rjw/
+    - xform/rjv/rjyv/
+    - xform/rj//
+    - xform/g(?=[iv])/j/
+    - xform/k(?=[iv])/q/
+    - xform/(?<![zcs])h(?=[iv])/x/
+    # 韵调变换
+    - xform/(?<=[bpmfuw])e(?=\d)/o/
+    - xform/yveng/yong/
     - xform/veng/iong/
-    - xform/ien/in/
-    - xform/uen/un/
-    - xform/ven/vn/
+    - xform/ueng/ong/
+    - xform/ieng/ing/
+    - xform/(?<=[iuv])en/n/
     - xform/iou/iu/
     - xform/uei/ui/
-    - xform/(?<=[bpmf])e(?=\d)/o/
-    - xform/ue(?=\d)/uo/
-    - xform/([jqx])v/$1u/
+    - xform/([jqxy])v/$1u/
 
 punctuator:
   half_shape:

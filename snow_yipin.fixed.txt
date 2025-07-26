@@ -45,7 +45,7 @@ c	才 才能
 cu	从 存在
 s	三 思想
 su	所 所以
-ng	而 而且
-ngi	一 一个
-ngu	我 我们
-ngv	与 于是
+rj	而 而且
+rji	一 一个
+rju	我 我们
+rjv	与 于是
