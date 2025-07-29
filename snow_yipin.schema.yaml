@@ -45,7 +45,7 @@ engine:
     - simplifier
 
 chord_composer:
-  alphabet: 'qazwsxedcrfvtgbyhnujmik,ol.p;/ '
+  alphabet: "qazwsxedcrfvtgbyhnujmik,ol.p;/' "
   algebra:
     # 双手并击，打出音节
     - xform|^([qazwsxedcrfvtgb]+)([p;/ol.ik,ujmyhn]+)$| $1  $2 |
@@ -54,8 +54,10 @@ chord_composer:
     # 左手或右手带空格并击，打出辅助码
     - xform/^([qazwsxedcrfvtgb]+) $/v $1 v/
     - xform/^([yhnujmikolp]+) $/v$1$1v/
-    # 左手并击，打出声介
+    # 左手并击，打出声介（一简字）
     - xform/^([qazwsxedcrfvtgb]+)$/ $1  /
+    # 左手并击右手单引号，打出声介的二选（一简词）
+    - xform/^([qazwsxedcrfvtgb]+)'$/ $1 - /
     # 右手并击，打出符号和功能键
     - xform|^h$|iduh |
     - xform|^j$|idh |
@@ -182,15 +184,20 @@ chord_composer:
     - xform/ m\. /ou4/
     - xlit/1234/wyxq/
   output_format:
+    # 首先去除无效的并击组合
     - erase/^.* .+ .*$/
-    - xform/^(rj)(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
-    - xform/^([bpm])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou)?([wyxq])$/[$1$2$3]/
-    - xform/^(f)(a|an|ang|e|ei|en|eng|ou)?([wyxq])$/[$1$2$3]/
-    - xform/^([dtnl])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
-    - xform/^([nl])(v|ve)([wyxq])$/[$1$2$3]/
-    - xform/^([gkh])(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng|i|ia|ian|iang|iao|ie|ien|ieng|iou|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
-    - xform/^([zcsr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    # 针对所有可能的音节加上中括号
+    - xform/^(u?[bpm])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?f)(a|an|ang|e|ei|en|eng|ou)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[dtnl])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[nl])(v|ve)([wyxq])$/[$1$2$3]/
+    - xform/^(u?[gkhr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[zcsr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    # 单独打声介的情况
+    - xform/^([bpmfdtnlgkhzcsr]j?[iuv]?)$/[$1]/
+    # 辅助码的情况
     - xform/^(v.+v)$/[$1]/
+    # 去除不合法音节
     - erase/^[a-z]+$/
     - xform/^\[(.+)\]/$1/
   prompt_format:
@@ -219,6 +226,7 @@ speller:
     - xform/^n(?=\d)/en/
     - xform/^m(?=\d)/mu/
     - xform/^hm(?=\d)/hen/
+    - xform/^([yl]?)o(?=\d)/$1e/
     # 韵调变换
     - xform/(?<=[jqxy])u/$1v/
     - xform/ui/uei/
@@ -242,7 +250,7 @@ speller:
     # 字母标调
     - xlit/1234/wyxq/
     # 支持声介简拼
-    - abbrev/^([bpmfdtnlgkhzcsr]j?[oiuv]).+$/$1/
+    - abbrev/^([bpmfdtnlgkhzcsr]j?[iuv]).+$/$1/
 
 translator:
   prism: snow_yipin

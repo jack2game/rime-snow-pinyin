@@ -859,3 +859,6 @@ deploy:
       # 辅助码
       - send: dj{Release+d}{Release+j}f {Release+f}{Release+space}
         assert: cand[1].text == "奕"
+      # 词
+      - send: dj{Release+d}{Release+j}dj {Release+d}{Release+j}{Release+space}
+        assert: has("意义")
