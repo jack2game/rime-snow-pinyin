@@ -1,5 +1,5 @@
 import { parse } from "csv-parse/sync";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { sortBy } from "lodash-es";
 import { argv } from "process";
 
@@ -11,16 +11,16 @@ interface 用户词 {
 }
 
 // 读取文件内容
-const input = readFileSync(filePath, 'utf8');
+const input = readFileSync(filePath, "utf8");
 
 // 预处理：移除注释行（以 # 开头）
 const lines = input
-  .split('\n')
-  .filter(line => line.trim() && !line.startsWith('#'));
+  .split("\n")
+  .filter((line) => line.trim() && !line.startsWith("#"));
 
 // 使用 csv-parse 解析 tab 分隔内容
-const records = parse(lines.join('\n'), {
-  delimiter: '\t',
+const records = parse(lines.join("\n"), {
+  delimiter: "\t",
   relax_column_count: true,
   trim: true,
 }) as string[][];
@@ -33,7 +33,10 @@ const 词表: 用户词[] = records.map(([拼音字段, 词, 注释字段]) => {
   return { 词, 拼音, 词频 };
 });
 
-const 排序词表 = sortBy(词表, x => -x.词频);
+const 排序词表 = sortBy(词表, (x) => -x.词频);
 
 // 输出调试信息
-console.log(排序词表);
+writeFileSync(
+  "output.txt",
+  排序词表.map((x) => `${x.词}\t${x.拼音}\t${x.词频}\n`).join("")
+);

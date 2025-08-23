@@ -60,10 +60,9 @@ end
 ---@param key KeyEvent
 ---@param env ShapeEnv
 function processor.func(key, env)
-  local input = snow.current(env.engine.context)
-  if not input or input:len() == 0 then
+  local input = snow.current(env.engine.context) or ""
+  if input:len() == 0 then
     env.engine.context:set_property("shape_input", "")
-    return snow.kNoop
   end
   -- 追加编码
   local context = env.engine.context

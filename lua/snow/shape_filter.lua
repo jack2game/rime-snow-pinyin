@@ -46,7 +46,7 @@ local function jiandao_encode(text, current, map)
   elseif #characters == 3 then
     -- 如果有三个字符，返回第一个字符的编码和第二个字符的编码
     result = (map[characters[1]] or "?"):sub(1, 1) ..
-    (map[characters[2]] or "?"):sub(1, 1) .. (map[characters[3]] or "?"):sub(1, 1)
+        (map[characters[2]] or "?"):sub(1, 1) .. (map[characters[3]] or "?"):sub(1, 1)
   elseif #characters >= 2 then
     -- 如果有两个字符，返回第一个字符的编码和第二个字符的编码
     result = (map[characters[1]] or "?"):sub(1, 1) .. (map[characters[2]] or "?"):sub(1, 1)
@@ -94,8 +94,8 @@ function filter.handle_candidate(text, shape_input, env)
         local element = env.strokes[text] or ""
         code = encode(element, { ["一"] = "e", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
         prompt = partial_code:len() > 0 and
-        " 笔画 [" .. partial_code:gsub(".", { ["e"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]" or
-        nil
+            " 笔画 [" .. partial_code:gsub(".", { ["e"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]" or
+            nil
         comment = code
       end
       local match = not code or code:sub(1, #partial_code) == partial_code
@@ -120,7 +120,7 @@ function filter.handle_candidate(text, shape_input, env)
         local element = env.strokes[text] or ""
         code = encode(element, { ["一"] = "v", ["丨"] = "i", ["丿"] = "u", ["丶"] = "o", ["乙"] = "a" })
         prompt = " 笔画 [" ..
-        partial_code:gsub(".", { ["v"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]"
+            partial_code:gsub(".", { ["v"] = "一", ["i"] = "丨", ["u"] = "丿", ["o"] = "丶", ["a"] = "乙" }) .. "]"
         comment = code
       end
       local match = not code or code:sub(1, #partial_code) == partial_code
@@ -151,7 +151,9 @@ function filter.handle_candidate(text, shape_input, env)
     local code = encode(element, env.radical_shengjie)
     local comment = (code .. " " .. element):gsub("rj", "'")
     if shape_input:sub(1, 1) == "v" then
-      partial_code = shape_input:sub(2, -2)
+      partial_code = shape_input:sub(2, -2):gsub("([a-z])%1", function(a, b)
+        return a:upper()
+      end)
       prompt = (" [" .. partial_code .. "]"):gsub("rj", "'")
     end
     local match = partial_code == "" or code == partial_code

@@ -862,3 +862,6 @@ deploy:
       # 词
       - send: dj{Release+d}{Release+j}dj {Release+d}{Release+j}{Release+space}
         assert: has("意义")
+      # 第一击带空格容错
+      - send: dj {Release+d}{Release+j}{Release+space}
+        assert: has("亿")

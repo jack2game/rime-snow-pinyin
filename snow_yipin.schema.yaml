@@ -20,9 +20,9 @@ engine:
   processors:
     - ascii_composer
     - chord_composer
-    - recognizer
     - lua_processor@*snow.shape_processor
     - lua_processor@*snow.combo_popping
+    - recognizer
     - key_binder
     - speller
     - punctuator
@@ -189,10 +189,12 @@ chord_composer:
     # 针对所有可能的音节加上中括号
     - xform/^(u?[bpm])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou)?([wyxq])$/[$1$2$3]/
     - xform/^(u?f)(a|an|ang|e|ei|en|eng|ou)?([wyxq])$/[$1$2$3]/
-    - xform/^(u?[dtnl])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
-    - xform/^(u?[nl])(v|ve)([wyxq])$/[$1$2$3]/
+    - xform/^(u?[dt])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iao|ie|ieng|iou|u|uan|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[nl])(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|uan|ue|uen|ueng|v|ve)([wyxq])$/[$1$2$3]/
     - xform/^(u?[gkhr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|i|ia|ian|iang|iao|ie|ien|ieng|iou|u|ua|uai|uan|uang|ue|uei|uen|ueng|v|van|ve|ven|veng)?([wyxq])$/[$1$2$3]/
-    - xform/^(u?[zcsr]j?)(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[zcs]j)(a|ai|an|ang|ao|e|ei|en|eng|ou|u|ua|uai|uan|uang|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?r)(an|ang|ao|e|en|eng|ou|u|ua|uan|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
+    - xform/^(u?[zcs])(a|ai|an|ang|ao|e|ei|en|eng|ou|u|uan|ue|uei|uen|ueng)?([wyxq])$/[$1$2$3]/
     # 单独打声介的情况
     - xform/^([bpmfdtnlgkhzcsr]j?[iuv]?)$/[$1]/
     # 辅助码的情况
